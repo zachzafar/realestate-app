@@ -1,0 +1,66 @@
+package template
+
+import (
+	"fmt"
+	"openlettings.com/types"
+)
+
+templ MyListingsPage(properties []types.PropertySummary) {
+	<main>
+		for _, property := range properties {
+			<button hx-ext="debug" hx-get={ fmt.Sprintf("listings/%d", property.PropertyId) } hx-trigger="click" hx-target="#property-details-modal">
+				<div class="card mb-3">
+					<img src="..." class="card-img-top" alt="..."/>
+					<div class="card-body">
+						<h5 class="card-title">{ property.Title }</h5>
+						<p class="card-text">{ property.Description }</p>
+						<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
+					</div>
+				</div>
+			</button>
+		}
+		<div id="property-details-modal"></div>
+	</main>
+}
+
+templ AdminListingDetails() {
+	<dialog id="my_modal_2" class="modal">
+		<div class="modal-box">
+			<h3 class="font-bold text-lg">Hello!</h3>
+			<p class="py-4">Press ESC key or click outside to close</p>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+}
+
+templ NewPropertyForm() {
+	<form id="multiStepForm" action="/admin/create-property/" method="post">
+		<div id="formContainer">
+			<!-- Step 1 -->
+			<div class="step">
+				<h2 class="mb-4">Step 1</h2>
+				@InputField("Listing name","title",true)
+				@InputField("Property type","type",true)
+				@InputField("Description","description",true)
+				@InputField("Price","price",true)
+			</div>
+			<!-- Step 2 -->
+			<div class="step">
+				<h2 class="mb-4">Step 2</h2>
+				@InputField("Address","address",true)
+				@InputField("City","city",true)
+			</div>
+			<!-- Step 3 -->
+			<div class="step">
+				<h2 class="mb-4">Step 3</h2>
+				@InputField("Size","size",true)
+				@InputField("Number of Bedrooms","bedrooms",true)
+				@InputField("Number of Bathrooms","bathrooms",true)
+				@InputField("Year Built","year",true)
+				<button type="submit" class="btn btn-success">Submit</button>
+			</div>
+		</div>
+	</form>
+}

@@ -1,0 +1,51 @@
+package template
+
+templ index() {
+	<!DOCTYPE html>
+	<html data-theme="light" lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>Open Rent</title>
+			<link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css"/>
+			<script src="/static/bundle.js"></script>
+			<script src="https://cdn.tailwindcss.com"></script>
+			<script src="https://unpkg.com/htmx.org/dist/ext/debug.js"></script>
+			<script src="https://unpkg.com/htmx.org@1.9.2" integrity="sha384-L6OqL9pRWyyFU3+/bjdSri+iIphTN/bvYyM37tICVyOJkWZLpP2vGn6VUEXgzg6h" crossorigin="anonymous"></script>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+	<style>
+    body {
+        width: 100%;
+        height: auto;
+    }
+</style>
+}
+
+templ MainLayout(Page templ.Component) {
+	@index() {
+		<div>
+			@Navbar()
+			@Page
+		</div>
+	}
+}
+
+templ AdminLayout(Page templ.Component) {
+	@index() {
+		<div>
+			<div>
+				@Navbar()
+			</div>
+			<div>
+				<div>
+					@Sidebar(Page)
+				</div>
+			</div>
+		</div>
+	}
+}

@@ -1,0 +1,114 @@
+package template
+
+import "openlettings.com/types"
+import "fmt"
+
+templ ListingsFilter() {
+	<form>
+		<div class="join">
+			<select class="select select-bordered join-item">
+				<option disabled selected>Country</option>
+				<option>Barbados</option>
+				<option>St.Vincent</option>
+				<option>Grenada</option>
+				<option>Jamaica</option>
+				<option>Trinidad & Tobago</option>
+			</select>
+			<select class="select select-bordered join-item">
+				<option disabled selected>Parish</option>
+				<option>St.James</option>
+				<option>St.Michael</option>
+				<option>Christ Church</option>
+				<option>St.John</option>
+				<option>St. Joseph</option>
+			</select>
+			<div>
+				<div>
+					<input class="input input-bordered join-item" placeholder="Address"/>
+				</div>
+			</div>
+			<select class="select select-bordered join-item">
+				<option disabled selected>Property type</option>
+				<option>Apartment</option>
+				<option>House</option>
+				<option>Condo</option>
+				<option>Bungalo</option>
+				<option>Cottage</option>
+			</select>
+			<select class="select select-bordered join-item">
+				<option disabled selected>Bedrooms</option>
+				<option>1</option>
+				<option>2</option>
+				<option>3</option>
+				<option>4</option>
+				<option>5</option>
+				<option>6</option>
+			</select>
+			<select class="select select-bordered join-item">
+				<option disabled selected>Bathrooms</option>
+				<option>1</option>
+				<option>2</option>
+				<option>3</option>
+				<option>4</option>
+				<option>5</option>
+				<option>6</option>
+			</select>
+			<div class="indicator">
+				<button class="btn join-item" type="submit">Search</button>
+			</div>
+		</div>
+	</form>
+}
+
+templ Listings(properties []types.PropertySummary) {
+	<main hx-boost="true">
+		@ListingsFilter()
+		<div class="max-h-[80vh] overflow-y-auto">
+			for _, property := range properties {
+				<a href={ templ.URL(fmt.Sprintf("/listings/%d", property.PropertyId)) }>
+					<div class="card mb-3">
+						<img src="..." class="card-img-top" alt="..."/>
+						<div class="card-body">
+							<h5 class="card-title">{ property.Title }</h5>
+							<p class="card-text">{ property.Description }</p>
+							<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
+						</div>
+					</div>
+				</a>
+			}
+		</div>
+	</main>
+}
+
+templ ListingDetails(property types.Property) {
+	<main>
+		<h1>{ property.Title }</h1>
+		<h3>{ property.Address }</h3>
+		<h5>{ fmt.Sprintf("%f",property.Price) }</h5>
+		<p>{ property.Description }</p>
+	</main>
+}
+
+templ Home() {
+	<main>
+		<h1>This is the Home page</h1>
+		@SearchForm()
+	</main>
+}
+
+templ SearchForm() {
+	<form action="/search-properties" method="GET" hx-boost="true">
+		<div class="w-auto flex-1 grid place-items-center bg-blue-300">
+			<div class="w-1/2 h-48 bg-blue-50 rounded-lg flex flex-col">
+				<div class="flex flex-row w-full justify-evenly border-b h-8">
+					<h1>To Rent</h1>
+					<h1>To Buy</h1>
+				</div>
+				<div class="flex-1 flex flex-row w-full  justify-evenly items-center">
+					<input name="address" type="text" placeholder="e.g St.James Barbados" class="input input-bordered w-full max-w-xs"/>
+					<button type="submit" class="btn btn-outline btn-info">Search</button>
+				</div>
+			</div>
+		</div>
+	</form>
+}
