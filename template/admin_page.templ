@@ -36,7 +36,7 @@ templ AdminListingDetails() {
 }
 
 templ NewPropertyForm() {
-	<form id="multiStepForm" action="/admin/create-property/" method="post">
+	<form id="multiStepForm" action="/admin/create-property/" method="post" enctype="multipart/form-data">
 		<div id="formContainer">
 			<!-- Step 1 -->
 			<div class="step">
@@ -59,6 +59,7 @@ templ NewPropertyForm() {
 				@InputField("Number of Bedrooms","bedrooms",true)
 				@InputField("Number of Bathrooms","bathrooms",true)
 				@InputField("Year Built","year",true)
+				<input type="file" name="images" accept=".jpeg" multiple required/>
 				<button type="submit" class="btn btn-success">Submit</button>
 			</div>
 		</div>

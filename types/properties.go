@@ -46,6 +46,7 @@ type PropertySummary struct {
 	Description string  `json:"description"`
 	Price       float64 `json:"price"`
 	Address     string  `json:"address"`
+	Url         string  `json:"url"`
 }
 
 func NewProperty(title string, desc string, PropType string, address string, city string, year string, bathrooms int, size int, bedrooms int, userid int, price float64) *Property {
@@ -64,12 +65,13 @@ func NewProperty(title string, desc string, PropType string, address string, cit
 	}
 }
 
-func NewPropertySummary(propertyId int, title string, desc string, price float64, address string) *PropertySummary {
+func NewPropertySummary(propertyId int, title string, desc string, price float64, address string, url string) *PropertySummary {
 	return &PropertySummary{
 		PropertyId:  propertyId,
 		Title:       title,
 		Description: desc,
 		Price:       price,
 		Address:     address,
+		Url:         url,
 	}
 }

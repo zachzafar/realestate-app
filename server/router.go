@@ -10,6 +10,9 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	fs := http.FileServer(http.Dir("./svelte/public/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
+	is := http.FileServer(http.Dir("./media/properties/"))
+	r.PathPrefix("/images/").Handler(http.StripPrefix("/images/", is))
+
 	ar := r.PathPrefix("/admin").Subrouter()
 	ar.Use(s.AuthorizeUser)
 	ar.HandleFunc("/listings/{id}", s.GetListingDetails).Methods("GET")

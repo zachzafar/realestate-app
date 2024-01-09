@@ -9,6 +9,14 @@ import (
 )
 
 func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseMultipartForm(10 << 20)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, "unable to parse form", http.StatusBadRequest)
+		return
+	}
+
 	userId := r.Context().Value("user-id").(int)
 	title := r.PostFormValue("title")
 	description := r.PostFormValue("description")
@@ -20,15 +28,19 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	bathrooms, _ := strconv.Atoi(r.PostFormValue("bathrooms"))
 	year := r.PostFormValue("year")
 	city := r.PostFormValue("city")
+	files := r.MultipartForm.File["images"]
 
 	property := types.NewProperty(title, description, property_type, address, city, year, bathrooms, size, bedrooms, userId, price)
 
-	err := s.db.CreateProperty(property)
+	id, err := s.db.CreateProperty(property)
+	err = s.db.UploadPropertyPhotos(files, id)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	http.Redirect(w, r, "/admin/listings", http.StatusSeeOther)
 }
 

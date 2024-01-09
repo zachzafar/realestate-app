@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -64,6 +65,7 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 	properties, err := s.db.GetProperties(propertyFilter, page, pageSize)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
