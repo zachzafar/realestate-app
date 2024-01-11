@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -49,8 +50,14 @@ func (s *Server) GetAdminListings(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+	if page == 0 {
+		page = 1
+	}
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))
-	propertyType := r.URL.Query().Get("propertyType")
+	if pageSize == 0 {
+		pageSize = 10
+	}
+	propertyType := r.URL.Query().Get("type")
 	address := r.URL.Query().Get("address")
 	upperBedCount, _ := strconv.Atoi(r.URL.Query().Get("upperBedCount"))
 	lowerBedcount, _ := strconv.Atoi(r.URL.Query().Get("lowerBedCount"))
@@ -62,6 +69,20 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	propertyFilter := types.NewPropertyFilter(propertyType, address, *priceRange, *bedRange, 0)
 
+	property_count, err := s.db.GetPropertyCount()
+
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	hasNextPage := false
+
+	if property_count-(page*pageSize) > 0 {
+		hasNextPage = true
+	}
+	fmt.Println("property count ", property_count)
+	fmt.Println(hasNextPage)
+
 	properties, err := s.db.GetProperties(propertyFilter, page, pageSize)
 
 	if err != nil {
@@ -69,8 +90,23 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	Listings := template.Listings(properties)
-	template.MainLayout(Listings).Render(r.Context(), w)
+	rawQuery := r.URL.Path
+	re := regexp.MustCompile("page=\\d+")
+	var nextPage string
+	if re.MatchString(rawQuery) {
+		nextPage = string(re.ReplaceAll([]byte(rawQuery), []byte(fmt.Sprintf("page=%d", page+1))))
+	} else {
+		nextPage = rawQuery + "?page=2"
+	}
+
+	if page == 1 {
+		Listings := template.ListingsPage(*propertyFilter, properties, hasNextPage, nextPage)
+		template.MainLayout(Listings).Render(r.Context(), w)
+		return
+	}
+	fmt.Println("this should happen")
+	template.Listings(properties, hasNextPage, nextPage).Render(r.Context(), w)
+
 }
 
 func (s *Server) GetListingDetails(w http.ResponseWriter, r *http.Request) {

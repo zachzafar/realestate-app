@@ -15,10 +15,15 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 
 	ar := r.PathPrefix("/admin").Subrouter()
 	ar.Use(s.AuthorizeUser)
+	// views
 	ar.HandleFunc("/listings/{id}", s.GetListingDetails).Methods("GET")
-	ar.HandleFunc("/listings", s.GetAdminListings)
+	ar.HandleFunc("/listings", s.GetAdminListings).Methods("GET")
 	ar.HandleFunc("/newProperty", s.GetNewPropertyForm).Methods("GET")
+
+	//actions
 	ar.HandleFunc("/create-property/", s.CreateProperty).Methods("POST")
+	ar.HandleFunc("/logout", s.Logout)
+
 	// views
 	r.HandleFunc("/", s.GetHomePage).Methods("GET")
 	r.HandleFunc("/search-properties", s.SearchProperties).Methods("GET")
@@ -30,4 +35,5 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	// actions
 	r.HandleFunc("/create-user/", s.CreateUser).Methods("POST")
 	r.HandleFunc("/auth-user/", s.LoginUser).Methods("POST")
+
 }

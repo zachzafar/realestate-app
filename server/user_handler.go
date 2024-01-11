@@ -68,3 +68,12 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 	}
 	http.Redirect(w, r, "/admin/listings", http.StatusFound)
 }
+
+func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
+
+	if err := s.db.DeleteSession(w, r); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}

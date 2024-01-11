@@ -30,3 +30,16 @@ func ObjContainsZeroOrEmptyStrings(obj interface{}) bool {
 
 	return true
 }
+
+func IsLast(i int, list interface{}) bool {
+	if reflect.TypeOf(list).Kind() != reflect.Slice {
+		return false
+	}
+
+	length := reflect.ValueOf(list).Len()
+	if length-1 == i {
+		return true
+	}
+
+	return false
+}

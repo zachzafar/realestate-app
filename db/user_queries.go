@@ -50,8 +50,17 @@ func (d *Database) CreateSession(w http.ResponseWriter, r *http.Request, user *t
 }
 
 func (d *Database) SerialiseSession(w http.ResponseWriter, r *http.Request) (http.ResponseWriter, *http.Request, error) {
-	session, _ := d.sessionStore.Get(r, "user-session")
+	session, err := d.sessionStore.Get(r, "user-session")
+	if err != nil {
+		return w, r, err
+	}
 	ctx := context.WithValue(r.Context(), "user-id", session.Values["userId"])
 	r = r.WithContext(ctx)
 	return w, r, nil
+}
+
+func (d *Database) DeleteSession(w http.ResponseWriter, r *http.Request) error {
+	session, _ := d.sessionStore.Get(r, "user-session")
+	err := d.sessionStore.Delete(r, w, session)
+	return err
 }

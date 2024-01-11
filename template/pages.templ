@@ -1,42 +1,29 @@
 package template
 
-import "openlettings.com/types"
-import "fmt"
+import (
+	"openlettings.com/types"
+	"openlettings.com/utils"
+	"fmt"
+)
 
-templ ListingsFilter() {
-	<form>
+templ ListingsFilter(filter types.PropertyFilter) {
+	<form action="/listings" method="GET">
 		<div class="join">
-			<select class="select select-bordered join-item">
-				<option disabled selected>Country</option>
-				<option>Barbados</option>
-				<option>St.Vincent</option>
-				<option>Grenada</option>
-				<option>Jamaica</option>
-				<option>Trinidad & Tobago</option>
-			</select>
-			<select class="select select-bordered join-item">
-				<option disabled selected>Parish</option>
-				<option>St.James</option>
-				<option>St.Michael</option>
-				<option>Christ Church</option>
-				<option>St.John</option>
-				<option>St. Joseph</option>
-			</select>
 			<div>
 				<div>
-					<input class="input input-bordered join-item" placeholder="Address"/>
+					<input class="input input-bordered join-item" name="address" value={ filter.Address } placeholder="Address"/>
 				</div>
 			</div>
-			<select class="select select-bordered join-item">
-				<option disabled selected>Property type</option>
-				<option>Apartment</option>
-				<option>House</option>
-				<option>Condo</option>
-				<option>Bungalo</option>
-				<option>Cottage</option>
+			<select class="select select-bordered join-item" name="type">
+				<option value="" selected?={ filter.Property_type == "" }>Property type</option>
+				<option value="apartment" selected?={ filter.Property_type == "apartment" }>Apartment</option>
+				<option value="house" selected?={ filter.Property_type == "house" }>House</option>
+				<option value="condo" selected?={ filter.Property_type == "condo" }>Condo</option>
+				<option value="bungalo" selected?={ filter.Property_type == "bungalo" }>Bungalo</option>
+				<option value="cottage" selected?={ filter.Property_type == "cottage" }>Cottage</option>
 			</select>
-			<select class="select select-bordered join-item">
-				<option disabled selected>Bedrooms</option>
+			<select class="select select-bordered join-item" name="bedrooms">
+				<option selected>Bedrooms</option>
 				<option>1</option>
 				<option>2</option>
 				<option>3</option>
@@ -44,8 +31,8 @@ templ ListingsFilter() {
 				<option>5</option>
 				<option>6</option>
 			</select>
-			<select class="select select-bordered join-item">
-				<option disabled selected>Bathrooms</option>
+			<select class="select select-bordered join-item" name="bathrooms">
+				<option selected>Bathrooms</option>
 				<option>1</option>
 				<option>2</option>
 				<option>3</option>
@@ -60,24 +47,36 @@ templ ListingsFilter() {
 	</form>
 }
 
-templ Listings(properties []types.PropertySummary) {
+templ ListingsPage(filter types.PropertyFilter,properties []types.PropertySummary,hasNext bool, nextPage string) {
 	<main hx-boost="true">
-		@ListingsFilter()
+		@ListingsFilter(filter)
 		<div class="max-h-[80vh] overflow-y-auto">
-			for _, property := range properties {
-				<a href={ templ.URL(fmt.Sprintf("/listings/%d", property.PropertyId)) }>
-					<div class="card mb-3">
-						<img src={ fmt.Sprintf("/images/%s", property.Url) } class="card-img-top" alt="..."/>
-						<div class="card-body">
-							<h5 class="card-title">{ property.Title }</h5>
-							<p class="card-text">{ property.Description }</p>
-							<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
-						</div>
-					</div>
-				</a>
-			}
+			@Listings(properties,hasNext,nextPage)
 		</div>
 	</main>
+}
+
+templ Listings(properties []types.PropertySummary,hasNext bool,nextPage string) {
+	for i, property := range properties {
+		<div
+ 			if utils.IsLast(i,properties) && hasNext {
+				hx-get={ nextPage }
+				hx-trigger="revealed"
+				hx-swap="afterend"
+			}
+		>
+			<a href={ templ.URL(fmt.Sprintf("/listings/%d", property.PropertyId)) }>
+				<div class="card mb-3">
+					<img src={ fmt.Sprintf("/images/%s", property.Url) } class="card-img-top" alt="..."/>
+					<div class="card-body">
+						<h5 class="card-title">{ property.Title }</h5>
+						<p class="card-text">{ property.Description }</p>
+						<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
+					</div>
+				</div>
+			</a>
+		</div>
+	}
 }
 
 templ ListingDetails(property types.Property) {

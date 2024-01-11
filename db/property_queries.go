@@ -78,21 +78,19 @@ func (d *Database) GetImages(id string) ([]string, error) {
 }
 
 func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSize int) ([]types.PropertySummary, error) {
-	if page == 0 {
-		page = 1
-	}
-	if pageSize == 0 {
-		pageSize = 10
-	}
+
 	query := `
 		SELECT p.property_id,p.title,p.description,p.price,p.address, COALESCE(m.url, '') AS url 
 		FROM properties p
 		LEFT JOIN media m ON p.property_id = m.property_id
 		`
 	filterString, parameters := filter.GenerateQueryString()
-	parameters = append(parameters, pageSize, (pageSize * page))
+	parameters = append(parameters, pageSize, (pageSize * (page - 1)))
+
 	if filterString != "" {
 		query = query + ` WHERE ` + filterString + " LIMIT ? OFFSET ?"
+	} else {
+		query = query + " LIMIT ? OFFSET ?"
 	}
 
 	rows, err := d.db.Query(query, parameters...)
@@ -116,6 +114,21 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 	}
 
 	return properties, nil
+}
+
+func (d *Database) GetPropertyCount() (int, error) {
+	query := `SELECT COUNT(*) AS row_count FROM properties;`
+	row, err := d.db.Query(query)
+	var count int
+	if row.Next() {
+		err = row.Scan(&count)
+	}
+
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
 }
 
 func (d *Database) GetPropertyDetails(propertyId int) (*types.Property, error) {
