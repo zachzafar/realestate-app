@@ -116,9 +116,18 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 	return properties, nil
 }
 
-func (d *Database) GetPropertyCount() (int, error) {
-	query := `SELECT COUNT(*) AS row_count FROM properties;`
-	row, err := d.db.Query(query)
+func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, error) {
+
+	filterString, params := queryFilter.GenerateQueryString()
+	query := `SELECT COUNT(*) AS row_count FROM properties`
+	if filterString != "" {
+		query = query + " WHERE " + filterString
+	}
+
+	row, err := d.db.Query(query, params...)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
 	var count int
 	if row.Next() {
 		err = row.Scan(&count)
