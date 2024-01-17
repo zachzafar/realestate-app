@@ -7,50 +7,54 @@ import (
 )
 
 templ ListingsFilter(filter types.PropertyFilter) {
-	<form action="/listings" method="GET">
-		<div class="join">
-			<div>
+	<div>
+		<form action="/listings" method="GET">
+			<div class="join">
 				<div>
-					<input class="input input-bordered join-item" name="address" value={ filter.Address } placeholder="Address"/>
+					<div>
+						<input class="input input-bordered join-item" name="address" value={ filter.Address } placeholder="Address"/>
+					</div>
+				</div>
+				<select class="select select-bordered join-item" name="type">
+					<option value="" selected?={ filter.Property_type == "" }>Property type</option>
+					<option value="apartment" selected?={ filter.Property_type == "apartment" }>Apartment</option>
+					<option value="house" selected?={ filter.Property_type == "house" }>House</option>
+					<option value="condo" selected?={ filter.Property_type == "condo" }>Condo</option>
+					<option value="bungalo" selected?={ filter.Property_type == "bungalo" }>Bungalo</option>
+					<option value="cottage" selected?={ filter.Property_type == "cottage" }>Cottage</option>
+				</select>
+				<select class="select select-bordered join-item" name="bedrooms">
+					<option selected>Bedrooms</option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+				</select>
+				<select class="select select-bordered join-item" name="bathrooms">
+					<option selected>Bathrooms</option>
+					<option>1</option>
+					<option>2</option>
+					<option>3</option>
+					<option>4</option>
+					<option>5</option>
+					<option>6</option>
+				</select>
+				<div class="indicator">
+					<button class="btn join-item" type="submit">Search</button>
 				</div>
 			</div>
-			<select class="select select-bordered join-item" name="type">
-				<option value="" selected?={ filter.Property_type == "" }>Property type</option>
-				<option value="apartment" selected?={ filter.Property_type == "apartment" }>Apartment</option>
-				<option value="house" selected?={ filter.Property_type == "house" }>House</option>
-				<option value="condo" selected?={ filter.Property_type == "condo" }>Condo</option>
-				<option value="bungalo" selected?={ filter.Property_type == "bungalo" }>Bungalo</option>
-				<option value="cottage" selected?={ filter.Property_type == "cottage" }>Cottage</option>
-			</select>
-			<select class="select select-bordered join-item" name="bedrooms">
-				<option selected>Bedrooms</option>
-				<option>1</option>
-				<option>2</option>
-				<option>3</option>
-				<option>4</option>
-				<option>5</option>
-				<option>6</option>
-			</select>
-			<select class="select select-bordered join-item" name="bathrooms">
-				<option selected>Bathrooms</option>
-				<option>1</option>
-				<option>2</option>
-				<option>3</option>
-				<option>4</option>
-				<option>5</option>
-				<option>6</option>
-			</select>
-			<div class="indicator">
-				<button class="btn join-item" type="submit">Search</button>
-			</div>
-		</div>
-	</form>
+		</form>
+	</div>
 }
 
 templ ListingsPage(filter types.PropertyFilter,properties []types.PropertySummary,hasNext bool, nextPage string) {
 	<main hx-boost="true">
-		@ListingsFilter(filter)
-		<div class="max-h-[80vh] overflow-y-auto">
+		<div class=" grid place-items-center h-24">
+			@ListingsFilter(filter)
+		</div>
+		<div class=" grid place-items-center">
 			@Listings(properties,hasNext,nextPage)
 		</div>
 	</main>
@@ -58,29 +62,33 @@ templ ListingsPage(filter types.PropertyFilter,properties []types.PropertySummar
 
 templ Listings(properties []types.PropertySummary,hasNext bool,nextPage string) {
 	for i, property := range properties {
-		<div
+		<a
  			if utils.IsLast(i,properties) && hasNext {
 				hx-get={ nextPage }
 				hx-trigger="revealed"
 				hx-swap="afterend"
 			}
+ 			class="card card-side w-3/5 mb-5 bg-base-100 shadow-xl"
+ 			href={ templ.URL(fmt.Sprintf("/listings/%d", property.PropertyId)) }
 		>
-			<a href={ templ.URL(fmt.Sprintf("/listings/%d", property.PropertyId)) }>
-				<div class="card mb-3">
-					<img src={ fmt.Sprintf("/images/%s", property.Url) } class="card-img-top" alt="..."/>
-					<div class="card-body">
-						<h5 class="card-title">{ property.Title }</h5>
-						<p class="card-text">{ property.Description }</p>
-						<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
-					</div>
+			<figure class="w-1/2 w-7/12 h-96"><img src={ fmt.Sprintf("/images/%s", property.Url) } class=" w-full h-full" alt="..."/></figure>
+			<div class="card-body w-5/12 h-96">
+				<h5 class="card-title">{ property.Title }</h5>
+				<p class="card-text">{ property.Description }</p>
+				<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
+				<div class="card-actions justify-end">
+					<div class="badge badge-outline">Type</div>
+					<div class="badge badge-outline">Bedrooms</div>
+					<div class="badge badge-outline">Bathrooma</div>
 				</div>
-			</a>
-		</div>
+			</div>
+		</a>
 	}
 }
 
 templ ListingDetails(property types.Property) {
 	<main>
+		@ImageCarousel()
 		<h1>{ property.Title }</h1>
 		<h3>{ property.Address }</h3>
 		<h5>{ fmt.Sprintf("%f",property.Price) }</h5>
@@ -88,26 +96,49 @@ templ ListingDetails(property types.Property) {
 	</main>
 }
 
+templ ImageCarousel() {
+	<div class="carousel w-full">
+		<div id="slide1" class="carousel-item relative w-full">
+			<img src="https://daisyui.com/images/stock/photo-1625726411847-8cbb60cc71e6.jpg" class="w-full"/>
+			<div class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+				<a href="#slide4" class="btn btn-circle">❮</a>
+				<a href="#slide2" class="btn btn-circle">❯</a>
+			</div>
+		</div>
+		<div id="slide2" class="carousel-item relative w-full">
+			<img src="https://daisyui.com/images/stock/photo-1609621838510-5ad474b7d25d.jpg" class="w-full"/>
+			<div class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+				<a href="#slide1" class="btn btn-circle">❮</a>
+				<a href="#slide3" class="btn btn-circle">❯</a>
+			</div>
+		</div>
+		<div id="slide3" class="carousel-item relative w-full">
+			<img src="https://daisyui.com/images/stock/photo-1414694762283-acccc27bca85.jpg" class="w-full"/>
+			<div class="absolute flex justify-between transform -translate-y-1/2 left-5 right-5 top-1/2">
+				<a href="#slide2" class="btn btn-circle">❮</a>
+				<a href="#slide4" class="btn btn-circle">❯</a>
+			</div>
+		</div>
+	</div>
+}
+
 templ Home() {
-	<main>
-		<h1>This is the Home page</h1>
+	<main class="h-full">
 		@SearchForm()
 	</main>
 }
 
 templ SearchForm() {
-	<form action="/search-properties" method="GET" hx-boost="true">
-		<div class="w-auto flex-1 grid place-items-center bg-blue-300">
-			<div class="w-1/2 h-48 bg-blue-50 rounded-lg flex flex-col">
-				<div class="flex flex-row w-full justify-evenly border-b h-8">
-					<h1>To Rent</h1>
-					<h1>To Buy</h1>
-				</div>
-				<div class="flex-1 flex flex-row w-full  justify-evenly items-center">
-					<input name="address" type="text" placeholder="e.g St.James Barbados" class="input input-bordered w-full max-w-xs"/>
-					<button type="submit" class="btn btn-outline btn-info">Search</button>
-				</div>
+	<div class="w-auto flex-1 grid place-items-center bg-blue-300 h-[92vh]">
+		<form class="w-1/2 h-48 bg-blue-50 rounded-lg flex flex-col" action="/search-properties" method="GET" hx-boost="true">
+			<div class="flex flex-row w-full justify-evenly border-b h-8">
+				<h1>To Rent</h1>
+				<h1>To Buy</h1>
 			</div>
-		</div>
-	</form>
+			<div class="flex-1 flex flex-row w-full  justify-evenly items-center">
+				<input name="address" type="text" placeholder="e.g St.James Barbados" class="input input-bordered w-full max-w-xs"/>
+				<button type="submit" class="btn btn-outline btn-info">Search</button>
+			</div>
+		</form>
+	</div>
 }

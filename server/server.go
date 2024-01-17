@@ -5,18 +5,21 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 	"openlettings.com/db"
 )
 
 type Server struct {
 	listenAddress string
 	db            *db.Database
+	logger        *logrus.Logger
 }
 
-func NewServer(addr string, db *db.Database) *Server {
+func NewServer(addr string, db *db.Database, logger *logrus.Logger) *Server {
 	return &Server{
 		listenAddress: addr,
 		db:            db,
+		logger:        logger,
 	}
 }
 

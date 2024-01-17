@@ -26,3 +26,5 @@ node_modules
 public
 media
 .DS_Store
+logfile.log
+.env
