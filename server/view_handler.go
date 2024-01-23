@@ -1,11 +1,13 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/gorilla/mux"
+	"openlettings.com/db"
 	"openlettings.com/template"
 	"openlettings.com/types"
 )
@@ -26,20 +28,23 @@ func (s *Server) GetRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GetAdminListings(w http.ResponseWriter, r *http.Request) {
-	userId := r.Context().Value("user-id")
+	userData, ok := r.Context().Value("user-id").(db.SessionData)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusForbidden)
+		return
+	}
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("pageSize"))
-	if userId == nil {
-		http.Error(w, "Unauthorized", http.StatusForbidden)
-	}
 
-	empty1 := types.NewRange(0, 0)
-	empty2 := types.NewRange(0, 0)
-	propertyFilter := types.NewPropertyFilter("", "", *empty1, *empty2, userId.(int))
+	emptyPriceRange := types.NewRange(0, 0)
+
+	propertyFilter := types.NewPropertyFilter(0, 0, 0, *emptyPriceRange, 0, 0, userData.UserId)
 	properties, err := s.db.GetProperties(propertyFilter, page, pageSize)
 
 	if err != nil {
+		s.logger.Error(err, " error at line 44 view_handler.go")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
 	Listings := template.MyListingsPage(properties)
@@ -51,9 +56,9 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 	propertyFilter, page := types.ParseListingParams(r)
 
 	property_count, err := s.db.GetPropertyCount(propertyFilter)
-	//fmt.Println("up to here works")
+
 	if err != nil {
-		fmt.Println(err.Error())
+		s.logger.Error(err, " Line 59 view_handle.go")
 	}
 
 	hasNextPage := false
@@ -69,20 +74,38 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	}
 
+	var countryKey types.ContextKey = "countries"
+	var propertyKey types.ContextKey = "property_types"
+
+	var ctx context.Context
+	countries, err := s.db.GetAllCountries()
+	if err != nil {
+		s.logger.Error(err, " line 32 middleware.go")
+	}
+	property_types, err := s.db.GetAllPropertyTypes()
+	if err != nil {
+		s.logger.Error(err, " line 36 middleware.go")
+	}
+	fmt.Println(countries)
+	fmt.Println(property_types)
+	ctx = context.WithValue(context.Background(), countryKey, countries)
+	ctx = context.WithValue(ctx, propertyKey, property_types)
+
 	properties, err := s.db.GetProperties(propertyFilter, page, 10)
 
 	if err != nil {
+		s.logger.Error(err, " Line 79 view_handler.go")
 		fmt.Println(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
 	if page == 1 {
+
 		Listings := template.ListingsPage(*propertyFilter, properties, hasNextPage, nextPage)
-		template.MainLayout(Listings).Render(r.Context(), w)
+		template.MainLayout(Listings).Render(ctx, w)
 		return
 	}
 
-	template.Listings(properties, hasNextPage, nextPage).Render(r.Context(), w)
+	template.Listings(properties, hasNextPage, nextPage).Render(ctx, w)
 
 }
 

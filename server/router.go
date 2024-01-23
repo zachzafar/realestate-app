@@ -7,6 +7,7 @@ import (
 )
 
 func (s *Server) HandleRoutes(r *mux.Router) {
+
 	fs := http.FileServer(http.Dir("./svelte/public/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
@@ -27,6 +28,7 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	// views
 	r.HandleFunc("/", s.GetHomePage).Methods("GET")
 	r.HandleFunc("/search-properties", s.SearchProperties).Methods("GET")
+
 	r.HandleFunc("/listings", s.GetListings).Methods("GET")
 	r.HandleFunc("/listings/{id}", s.GetListingDetails)
 	r.HandleFunc("/login", s.GetLogin).Methods("GET")
@@ -35,5 +37,7 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	// actions
 	r.HandleFunc("/create-user/", s.CreateUser).Methods("POST")
 	r.HandleFunc("/auth-user/", s.LoginUser).Methods("POST")
+
+	r.HandleFunc("/parishes", s.GetParishes).Methods("GET")
 
 }

@@ -83,6 +83,7 @@ func NewPropertySummary(propertyId int, title string, desc string, price float64
 
 func ParseListingParams(r *http.Request) (*PropertyFilter, int) {
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+
 	if page == 0 {
 		page = 1
 	}
@@ -90,17 +91,17 @@ func ParseListingParams(r *http.Request) (*PropertyFilter, int) {
 	if pageSize == 0 {
 		pageSize = 10
 	}
-	propertyType := r.URL.Query().Get("type")
-	address := r.URL.Query().Get("address")
-	upperBedCount, _ := strconv.Atoi(r.URL.Query().Get("upperBedCount"))
-	lowerBedcount, _ := strconv.Atoi(r.URL.Query().Get("lowerBedCount"))
-	lowerPriceRange, _ := strconv.Atoi(r.URL.Query().Get("lowerPriceRange"))
-	upperPriceRange, _ := strconv.Atoi(r.URL.Query().Get("upperPriceRange"))
+	propertyType, _ := strconv.Atoi(r.URL.Query().Get("property_type"))
+	country, _ := strconv.Atoi(r.URL.Query().Get("country"))
+	parish, _ := strconv.Atoi(r.URL.Query().Get("parish"))
+	beds, _ := strconv.Atoi(r.URL.Query().Get("bedrooms"))
+	bathrooms, _ := strconv.Atoi(r.URL.Query().Get("bathrooms"))
+	lowerPriceRange, _ := strconv.Atoi(r.URL.Query().Get("maxprice"))
+	upperPriceRange, _ := strconv.Atoi(r.URL.Query().Get("minprice"))
 
 	priceRange := NewRange(upperPriceRange, lowerPriceRange)
-	bedRange := NewRange(upperBedCount, lowerBedcount)
 
-	propertyFilter := NewPropertyFilter(propertyType, address, *priceRange, *bedRange, 0)
+	propertyFilter := NewPropertyFilter(propertyType, country, parish, *priceRange, beds, bathrooms, 0)
 
 	return propertyFilter, page
 }

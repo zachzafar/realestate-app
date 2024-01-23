@@ -85,14 +85,17 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 		LEFT JOIN media m ON p.property_id = m.property_id
 		`
 	filterString, parameters := filter.GenerateQueryString()
+	paramLength := len(parameters)
 	parameters = append(parameters, pageSize, (pageSize * (page - 1)))
 
-	if filterString != "" {
-		query = query + ` WHERE ` + filterString + " LIMIT ? OFFSET ?"
-	} else {
-		query = query + " LIMIT ? OFFSET ?"
-	}
+	limit := fmt.Sprintf(" LIMIT $%d OFFSET $%d", paramLength+1, paramLength+2)
 
+	if filterString != "" {
+		query = query + ` WHERE ` + filterString + limit
+	} else {
+		query = query + " ORDER BY p.property_id" + limit
+	}
+	fmt.Println(query)
 	rows, err := d.db.Query(query, parameters...)
 
 	if err != nil {

@@ -2,6 +2,7 @@ package server
 
 import (
 	"net/http"
+	"time"
 
 	"openlettings.com/types"
 	"openlettings.com/utils"
@@ -62,16 +63,25 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = s.db.CreateSession(w, r, user)
+	sessionID, err := s.db.CreateSession(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	sessionCookie := http.Cookie{Name: "session-id", Value: sessionID, Expires: time.Now().Add(24 * time.Hour), HttpOnly: true}
+
+	http.SetCookie(w, &sessionCookie)
+
 	http.Redirect(w, r, "/admin/listings", http.StatusFound)
 }
 
 func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
+	sessionCookie, err := r.Cookie("session-id")
+	sessionID := sessionCookie.Value
 
-	if err := s.db.DeleteSession(w, r); err != nil {
+	s.logger.Info(err, "  user doesn't have session cookie")
+
+	if err := s.db.DeleteSession(sessionID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
