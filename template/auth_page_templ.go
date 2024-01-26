@@ -41,7 +41,7 @@ func RegisterPage() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</label> <input type=\"password\" name=\"password \" class=\"form-control input input-bordered input-md w-full max-w-xs\" id=\"exampleInputPassword1\"></div><button type=\"submit\" class=\"btn btn-primary\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</label> <input type=\"password\" name=\"password\" class=\"form-control input input-bordered input-md w-full max-w-xs\" id=\"exampleInputPassword1\"></div><button type=\"submit\" class=\"btn btn-primary\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -25,13 +25,13 @@ func (d *Database) CreateProperty(property *types.Property) (int64, error) {
 func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int64) error {
 	query := `INSERT INTO media (property_id,url) VALUES ($1,$2)`
 	id_string := strconv.FormatInt(id, 10)
-	fmt.Println("processing images...")
+
 	if err := os.MkdirAll("./media/properties/"+id_string, 0777); err != nil {
 		return utils.CustomError{Message: "failed to create directory"}
 	}
 
 	for _, file := range files {
-		fmt.Println("uploading")
+
 		uploadedFile, err := file.Open()
 		if err != nil {
 			return utils.CustomError{Message: "problem opening file open"}
@@ -40,7 +40,7 @@ func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int64)
 		f, err := os.OpenFile("./media/properties/"+id_string+"/"+file.Filename, os.O_WRONLY|os.O_CREATE, 0666)
 
 		if err != nil {
-			fmt.Println(err.Error())
+
 			return utils.CustomError{Message: "problem saving file"}
 		}
 		defer f.Close()
@@ -54,13 +54,13 @@ func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int64)
 		if err != nil {
 			return err
 		}
-		fmt.Println("entered image successfully")
+
 	}
 	return nil
 }
 
 func (d *Database) GetImages(id string) ([]string, error) {
-	query := `SELECT url FROM media where property_id=?`
+	query := `SELECT url FROM media where property_id=$1`
 	rows, err := d.db.Query(query, id)
 
 	if err != nil {
@@ -95,7 +95,7 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 	} else {
 		query = query + " ORDER BY p.property_id" + limit
 	}
-	fmt.Println(query)
+
 	rows, err := d.db.Query(query, parameters...)
 
 	if err != nil {
@@ -129,7 +129,7 @@ func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, err
 
 	row, err := d.db.Query(query, params...)
 	if err != nil {
-		fmt.Println(err.Error())
+
 	}
 	var count int
 	if row.Next() {
@@ -144,7 +144,7 @@ func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, err
 }
 
 func (d *Database) GetPropertyDetails(propertyId int) (*types.Property, error) {
-	query := `SELECT title,description,property_type,address,city,size,bedrooms,bathrooms,year_built,price,user_id FROM properties WHERE property_id=?`
+	query := `SELECT title,description,property_type,address,city,size,bedrooms,bathrooms,year_built,price,user_id FROM properties WHERE property_id=$1`
 	var property types.Property
 
 	err := d.db.QueryRow(query, propertyId).Scan(&property.Title, &property.Description, &property.PropertyType, &property.Address, &property.City, &property.Size, &property.Bedrooms, &property.Bathrooms, &property.YearBuilt, &property.Price, &property.UserID)

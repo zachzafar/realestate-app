@@ -10,7 +10,6 @@ import (
 
 type SessionData struct {
 	UserId int
-	Role   string
 }
 
 func generateID() (string, error) {
@@ -27,12 +26,12 @@ func (d *Database) CreateSession(user *types.User) (string, error) {
 	query := `INSERT INTO sessions (session_id,data) VALUES ($1,$2)`
 	sessionData := &SessionData{
 		UserId: user.UserId,
-		Role:   user.Role,
 	}
 
 	sessionDataBytes, err := json.Marshal(sessionData) //
 
 	if err != nil {
+
 		return "", err
 	}
 
@@ -41,6 +40,7 @@ func (d *Database) CreateSession(user *types.User) (string, error) {
 	_, err = d.db.Exec(query, sessionId, sessionDataBytes)
 
 	if err != nil {
+
 		return "", err
 	}
 
@@ -48,7 +48,7 @@ func (d *Database) CreateSession(user *types.User) (string, error) {
 }
 
 func (d *Database) GetSessionData(sessionID string) (*SessionData, error) {
-	query := `SELECT data FROM sessions WHERE session_id=?`
+	query := `SELECT data FROM sessions WHERE session_id=$1`
 	var sessionByteData []byte
 	err := d.db.QueryRow(query, sessionID).Scan(&sessionByteData)
 
@@ -69,7 +69,7 @@ func (d *Database) GetSessionData(sessionID string) (*SessionData, error) {
 }
 
 func (d *Database) DeleteSession(sessionID string) error {
-	query := `DELETE FROM sessions WHERE session_id=?`
+	query := `DELETE FROM sessions WHERE session_id=$1`
 	_, err := d.db.Exec(query, sessionID)
 
 	if err != nil {

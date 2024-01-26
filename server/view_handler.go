@@ -28,8 +28,9 @@ func (s *Server) GetRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GetAdminListings(w http.ResponseWriter, r *http.Request) {
-	userData, ok := r.Context().Value("user-id").(db.SessionData)
+	userData, ok := r.Context().Value("user-id").(*db.SessionData)
 	if !ok {
+		fmt.Print("not okay")
 		http.Error(w, "Unauthorized", http.StatusForbidden)
 		return
 	}
@@ -86,8 +87,7 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		s.logger.Error(err, " line 36 middleware.go")
 	}
-	fmt.Println(countries)
-	fmt.Println(property_types)
+
 	ctx = context.WithValue(context.Background(), countryKey, countries)
 	ctx = context.WithValue(ctx, propertyKey, property_types)
 
@@ -95,7 +95,7 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		s.logger.Error(err, " Line 79 view_handler.go")
-		fmt.Println(err.Error())
+
 	}
 
 	if page == 1 {

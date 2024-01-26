@@ -11,7 +11,7 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	property, err := types.ParsePropertyBody(r)
 
 	if err != nil {
-		fmt.Println(err.Error())
+
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -22,7 +22,7 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	err = s.db.UploadPropertyPhotos(files, id)
 
 	if err != nil {
-		fmt.Println(err.Error())
+
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -33,6 +33,6 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 func (s *Server) SearchProperties(w http.ResponseWriter, r *http.Request) {
 
 	route := fmt.Sprintf("/listings?page=1&pageSize=10&address=%s", r.URL.Query().Get("address"))
-	fmt.Println(route)
+
 	http.Redirect(w, r, route, http.StatusSeeOther)
 }

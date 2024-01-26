@@ -78,9 +78,15 @@ func (p PropertyFilter) GenerateQueryString() (string, []interface{}) {
 			}
 		} else {
 			if field.Interface().(int) != 0 {
+
 				counter = counter + 1
 				queryFilter = fmt.Sprintf("%s=$%d", dbColumn, counter)
 				variables = append(variables, field.Interface())
+				if queryString != "" {
+					queryString = queryString + " AND " + queryFilter
+				} else {
+					queryString = queryFilter
+				}
 			}
 		}
 

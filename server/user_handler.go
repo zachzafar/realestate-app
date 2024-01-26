@@ -9,10 +9,9 @@ import (
 )
 
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
-	username := r.PostFormValue("username")
+
 	password := r.PostFormValue("password")
 	email := r.PostFormValue("email")
-	role := r.PostFormValue("role")
 
 	_, err := s.db.GetUser(email)
 
@@ -27,7 +26,7 @@ func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newUser := types.NewUser(0, username, hashedPassword, role, email)
+	newUser := &types.User{Email: email, PasswordHash: hashedPassword}
 
 	err = s.db.CreateUser(newUser)
 
@@ -48,6 +47,7 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 	user, err := s.db.GetUser(email)
 
 	if err != nil {
+
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -56,7 +56,8 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Sorry those credentials do not match", http.StatusBadRequest)
 		return
 	}
-	isPassword := utils.CheckPassword(password, user.Password_hash)
+
+	isPassword := utils.CheckPassword(password, user.PasswordHash)
 
 	if !isPassword {
 		http.Error(w, "Sorry those credentials do not match", http.StatusBadRequest)
@@ -66,9 +67,10 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 	sessionID, err := s.db.CreateSession(user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	sessionCookie := http.Cookie{Name: "session-id", Value: sessionID, Expires: time.Now().Add(24 * time.Hour), HttpOnly: true}
+	sessionCookie := http.Cookie{Name: "session-id", Path: "/", Value: sessionID, Expires: time.Now().Add(24 * time.Hour), HttpOnly: true}
 
 	http.SetCookie(w, &sessionCookie)
 

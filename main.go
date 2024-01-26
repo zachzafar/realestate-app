@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 
 	"log"
@@ -57,7 +56,7 @@ func main() {
 func runMigrations() error {
 	migrationsPath := "file://db/migrations"
 	dbsource := os.Getenv("DB_URL")
-	fmt.Println(dbsource)
+
 	migration, err := migrate.New(migrationsPath, dbsource)
 
 	if err != nil {
