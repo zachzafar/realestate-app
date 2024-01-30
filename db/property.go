@@ -12,8 +12,9 @@ import (
 )
 
 func (d *Database) CreateProperty(property *types.Property) (int64, error) {
-	query := `INSERT INTO properties (title,description,property_type,address,city,size,bedrooms,bathrooms,year_built,price,user_id) VALUES ($1, $2, $3, $4, $5, $6,$7,$8, $9,$10,$11)`
-	result, err := d.db.Exec(query, property.Title, property.Description, property.PropertyType, property.Address, property.City, property.Size, property.Bedrooms, property.Bathrooms, property.YearBuilt, property.Price, property.UserID)
+	query, values := property.GeneratInsertQuery()
+	query = `INSERT INTO properties ` + query
+	result, err := d.db.Exec(query, values...)
 	if err != nil {
 		return 0, err
 	}
@@ -21,6 +22,11 @@ func (d *Database) CreateProperty(property *types.Property) (int64, error) {
 	id, err := result.LastInsertId()
 	return id, err
 }
+
+// func (d *Database) UpdateProperty(property *types.Property) (err error) {
+// 	query := ``
+
+// }
 
 func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int64) error {
 	query := `INSERT INTO media (property_id,url) VALUES ($1,$2)`
@@ -144,14 +150,16 @@ func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, err
 }
 
 func (d *Database) GetPropertyDetails(propertyId int) (*types.Property, error) {
-	query := `SELECT title,description,property_type,address,city,size,bedrooms,bathrooms,year_built,price,user_id FROM properties WHERE property_id=$1`
-	var property types.Property
+	var property *types.Property
 
-	err := d.db.QueryRow(query, propertyId).Scan(&property.Title, &property.Description, &property.PropertyType, &property.Address, &property.City, &property.Size, &property.Bedrooms, &property.Bathrooms, &property.YearBuilt, &property.Price, &property.UserID)
+	query, pointers := property.GenerateQueryString()
+
+	query = "SELECT " + query + " FROM properties WHERE property_id=$1"
+	err := d.db.QueryRow(query, propertyId).Scan(pointers...)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return &property, nil
+	return property, nil
 }

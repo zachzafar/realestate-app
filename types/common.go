@@ -3,17 +3,10 @@ package types
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
-type PropertyFilter struct {
-	PriceRange    Range `db:"price"`
-	Property_type int   `db:"property_type_id"`
-	Country       int   `db:"country_id"`
-	Parish        int   `db:"parish_id"`
-	Beds          int   `db:"bedrooms"`
-	Bathrooms     int   `db:"bathrooms"`
-	UserId        int   `db:"user_id"`
-}
+type ContextKey string
 
 type Range struct {
 	Upper int
@@ -24,23 +17,57 @@ func NewRange(upper int, lower int) *Range {
 	return &Range{Upper: upper, Lower: lower}
 }
 
-func NewPropertyFilter(property_type int, country int, parish int, priceRange Range, beds int, bathrooms int, userId int) *PropertyFilter {
+type Relation struct{}
 
-	return &PropertyFilter{
-		Beds:          beds,
-		Bathrooms:     bathrooms,
-		Property_type: property_type,
-		Country:       country,
-		Parish:        parish,
-		PriceRange:    priceRange,
-		UserId:        userId,
+func (r Relation) GeneratInsertQuery() (string, []interface{}) {
+	var variables []interface{}
+	var columns []string
+	var placeholders []string
+	StructVal := reflect.ValueOf(r)
+	StructType := StructVal.Type()
+	counter := 0
+	for i := 0; i < StructVal.NumField(); i++ {
+		counter += 1
+		field := StructVal.Field(i)
+		fieldType := StructType.Field(i)
+		columns = append(columns, fieldType.Tag.Get("db"))
+		variables = append(variables, field.Interface())
+		placeholders = append(placeholders, fmt.Sprintf("$%d", counter))
 	}
+
+	columnString := "(" + strings.Join(columns, ",") + ")"
+	placeholderString := "(" + strings.Join(placeholders, ",") + ")"
+	query := columnString + " VALUES " + placeholderString
+
+	return query, variables
 }
 
-func (p PropertyFilter) GenerateQueryString() (string, []interface{}) {
+func (r Relation) GenerateQueryString() (string, []interface{}) {
+	var pointers []interface{}
+	var columns []string
+	StructVal := reflect.ValueOf(r)
+	StructType := StructVal.Type()
+
+	for i := 0; i < StructVal.NumField(); i++ {
+		fieldValue := StructVal.Field(i)
+		pointer := fieldValue.Addr().Interface()
+		pointers = append(pointers, pointer)
+
+		fieldType := StructType.Field(i)
+		columns = append(columns, fieldType.Tag.Get("db"))
+	}
+
+	query := strings.Join(columns, ",")
+
+	return query, pointers
+}
+
+type Filter struct{}
+
+func (f Filter) GenerateQueryString() (string, []interface{}) {
 	var variables []interface{}
 	queryString := ""
-	filterVal := reflect.ValueOf(p)
+	filterVal := reflect.ValueOf(f)
 	filterType := filterVal.Type()
 	var queryFilter string
 	counter := 0
@@ -94,3 +121,7 @@ func (p PropertyFilter) GenerateQueryString() (string, []interface{}) {
 
 	return queryString, variables
 }
+
+// func (r Relation) GenerateSelectionQuery() (string, []interface{}) {
+
+// }

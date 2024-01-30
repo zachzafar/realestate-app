@@ -8,10 +8,6 @@ import (
 	"openlettings.com/types"
 )
 
-type SessionData struct {
-	UserId int
-}
-
 func generateID() (string, error) {
 	randomBytes := make([]byte, 32)
 	_, err := rand.Read(randomBytes)
@@ -24,7 +20,7 @@ func generateID() (string, error) {
 
 func (d *Database) CreateSession(user *types.User) (string, error) {
 	query := `INSERT INTO sessions (session_id,data) VALUES ($1,$2)`
-	sessionData := &SessionData{
+	sessionData := &types.SessionData{
 		UserId: user.UserId,
 	}
 
@@ -47,7 +43,7 @@ func (d *Database) CreateSession(user *types.User) (string, error) {
 	return sessionId, nil
 }
 
-func (d *Database) GetSessionData(sessionID string) (*SessionData, error) {
+func (d *Database) GetSessionData(sessionID string) (*types.SessionData, error) {
 	query := `SELECT data FROM sessions WHERE session_id=$1`
 	var sessionByteData []byte
 	err := d.db.QueryRow(query, sessionID).Scan(&sessionByteData)
@@ -56,7 +52,7 @@ func (d *Database) GetSessionData(sessionID string) (*SessionData, error) {
 		return nil, err
 	}
 
-	var sessionData SessionData
+	var sessionData types.SessionData
 
 	err = json.Unmarshal(sessionByteData, &sessionData)
 

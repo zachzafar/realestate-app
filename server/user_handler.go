@@ -4,9 +4,20 @@ import (
 	"net/http"
 	"time"
 
+	"openlettings.com/template"
 	"openlettings.com/types"
 	"openlettings.com/utils"
 )
+
+func (s *Server) GetRegistration(w http.ResponseWriter, r *http.Request) {
+	Register := template.RegisterPage()
+	template.MainLayout(Register).Render(r.Context(), w)
+}
+
+func (s *Server) GetLogin(w http.ResponseWriter, r *http.Request) {
+	Login := template.Login()
+	template.MainLayout(Login).Render(r.Context(), w)
+}
 
 func (s *Server) CreateUser(w http.ResponseWriter, r *http.Request) {
 
@@ -74,7 +85,7 @@ func (s *Server) LoginUser(w http.ResponseWriter, r *http.Request) {
 
 	http.SetCookie(w, &sessionCookie)
 
-	http.Redirect(w, r, "/admin/listings", http.StatusFound)
+	http.Redirect(w, r, "/admin/", http.StatusFound)
 }
 
 func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {

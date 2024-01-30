@@ -2,32 +2,65 @@ package template
 
 import (
 	"fmt"
-	"openlettings.com/types"
+
+	"openlettings.com/db"
 )
 
-templ MyListingsPage(properties []types.PropertySummary) {
-	<main>
-		for _, property := range properties {
-			<button hx-ext="debug" hx-get={ fmt.Sprintf("listings/%d", property.PropertyId) } hx-trigger="click" hx-target="#property-details-modal">
-				<div class="card mb-3">
-					<img src="..." class="card-img-top" alt="..."/>
-					<div class="card-body">
-						<h5 class="card-title">{ property.Title }</h5>
-						<p class="card-text">{ property.Description }</p>
-						<p class="card-text"><small class="text-body-secondary">{ fmt.Sprintf("%f",property.Price) }</small></p>
-					</div>
-				</div>
-			</button>
-		}
-		<div id="property-details-modal"></div>
-	</main>
+templ NewAdminLayout(Page templ.Component) {
+	@index() {
+		<div>
+			<div class="min-h-screen">
+				@AdminNav()
+				@Page
+			</div>
+			@Footer()
+		</div>
+	}
 }
 
-templ AdminListingDetails() {
+templ AdminNav() {
+	<div class="navbar bg-base-100 shadow-md">
+		<div class="navbar-start">
+			<a class="btn btn-ghost" href="/properties">Properties</a>
+			<a class="btn btn-ghost" href="/listings">Messages</a>
+		</div>
+		<div class="navbar-center">
+			<a class="btn btn-ghost text-xl">Open Rent</a>
+		</div>
+		<div class="navbar-end">
+			<div class="dropdown dropdown-end">
+				<div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+					<div class="w-10 rounded-full">
+						<img alt="Tailwind CSS Navbar component" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"/>
+					</div>
+				</div>
+				<ul tabindex="0" class="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
+					<li><a href="/admin/logout">Logout</a></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+}
+
+templ AdminMainProperties() {
+	<div class="flex flex-row w-full py-6 px-28 ">
+		<h1 class=" flex-1">Properties</h1>
+		<button onclick="my_modal_2.showModal()" class="link link-primary flex-none">New Property</button>
+	</div>
+	<div role="tablist" class="tabs tabs-bordered  mx-28 ">
+		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="All"/>
+		<div role="tabpanel" class="tab-content p-10">
+			<div hx-get={ "/listings" } hx-trigger="revealed" class=""></div>
+		</div>
+		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="On-market" checked/>
+		<div role="tabpanel" class="tab-content p-10"></div>
+		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="Off-Market"/>
+		<div role="tabpanel" class="tab-content p-10">Tab content 3</div>
+	</div>
 	<dialog id="my_modal_2" class="modal">
 		<div class="modal-box">
-			<h3 class="font-bold text-lg">Hello!</h3>
-			<p class="py-4">Press ESC key or click outside to close</p>
+			<h1>New Property</h1>
+			@NewPropertyForm()
 		</div>
 		<form method="dialog" class="modal-backdrop">
 			<button>close</button>
@@ -35,7 +68,7 @@ templ AdminListingDetails() {
 	</dialog>
 }
 
-templ NewPropertyForm() {
+templ PropertyForm() {
 	<form id="multiStepForm" action="/admin/create-property/" method="post" enctype="multipart/form-data">
 		<div id="formContainer">
 			<!-- Step 1 -->
@@ -63,5 +96,27 @@ templ NewPropertyForm() {
 				<button type="submit" class="btn btn-success">Submit</button>
 			</div>
 		</div>
+	</form>
+}
+
+templ NewPropertyForm() {
+	<form action="/admin/create-property/" method="post" enctype="multipart/form-data">
+		<div id="formContainer">
+			@InputField("Listing name","title",true)
+			@InputField("Property type","type",true)
+			@InputField("Address","address",true)
+			<select class="select select-bordered join-item" name="country" hx-get="/parishes" hx-target="#parishes">
+				<option selected>Country</option>
+				if countries,ok := ctx.Value(countryKey).(([]db.Option)); ok {
+					for _, option := range(countries) {
+						<option value={ fmt.Sprint(option.Id) }>{ option.Name }</option>
+					}
+				}
+			</select>
+			<select class="select select-bordered join-item" name="parish" id="parishes">
+				<option value="0" selected>Parish</option>
+			</select>
+		</div>
+		<button type="submit" class="btn btn-info">Create property</button>
 	</form>
 }

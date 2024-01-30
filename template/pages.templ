@@ -83,14 +83,12 @@ templ ListingsFilter(filter types.PropertyFilter) {
 	</div>
 }
 
-templ ListingsPage(filter types.PropertyFilter,properties []types.PropertySummary,hasNext bool, nextPage string) {
+templ ListingsPage(filter types.PropertyFilter, query string) {
 	<main hx-boost="true">
 		<div class=" grid place-items-center h-24">
 			@ListingsFilter(filter)
 		</div>
-		<div class=" grid place-items-center">
-			@Listings(properties,hasNext,nextPage)
-		</div>
+		<div class=" grid place-items-center" id="listings" hx-get={ "/listings?" + query } hx-trigger="revealed"></div>
 	</main>
 }
 

@@ -9,11 +9,22 @@ import (
 
 func (s *Server) AuthorizeUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, ok := r.Context().Value("user-id").(*types.SessionData)
+		if !ok {
+			http.Error(w, "Unauthorized", http.StatusForbidden)
+			return
+		}
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *Server) SerialiseUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionCookie, err := r.Cookie("session-id")
 		if err != nil {
-
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			s.logger.Error(err.Error(), "")
+			next.ServeHTTP(w, r)
 			return
 		}
 		sessionID := sessionCookie.Value
@@ -21,7 +32,7 @@ func (s *Server) AuthorizeUser(next http.Handler) http.Handler {
 		sessionData, err := s.db.GetSessionData(sessionID)
 		if err != nil {
 			s.logger.Error(err.Error(), " error on Line 24 middleware.go")
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			next.ServeHTTP(w, r)
 			return
 		}
 		ctx := context.WithValue(r.Context(), "user-id", sessionData)

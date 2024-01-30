@@ -7,7 +7,7 @@ import (
 )
 
 func (s *Server) HandleRoutes(r *mux.Router) {
-
+	r.Use(s.SerialiseUser)
 	fs := http.FileServer(http.Dir("./svelte/public/"))
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
@@ -17,18 +17,19 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	ar := r.PathPrefix("/admin").Subrouter()
 	ar.Use(s.AuthorizeUser)
 	// views
-	ar.HandleFunc("/listings/{id}", s.GetListingDetails).Methods("GET")
-	ar.HandleFunc("/listings", s.GetAdminListings).Methods("GET")
-	ar.HandleFunc("/newProperty", s.GetNewPropertyForm).Methods("GET")
+	ar.HandleFunc("/", s.GetAdminPropertiesPage)
 
 	//actions
 	ar.HandleFunc("/create-property/", s.CreateProperty).Methods("POST")
+	ar.HandleFunc("/delete-property/", s.DeleteProperty).Methods("DELETE")
+	ar.HandleFunc("/update-property/", s.UpdateProperty).Methods("UPDATE")
 	ar.HandleFunc("/logout", s.Logout)
 
 	// views
 	r.HandleFunc("/", s.GetHomePage).Methods("GET")
 	r.HandleFunc("/search-properties", s.SearchProperties).Methods("GET")
 
+	r.HandleFunc("/homes", s.GetListingsPage).Methods("GET")
 	r.HandleFunc("/listings", s.GetListings).Methods("GET")
 	r.HandleFunc("/listings/{id}", s.GetListingDetails)
 	r.HandleFunc("/login", s.GetLogin).Methods("GET")
