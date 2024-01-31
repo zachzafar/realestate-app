@@ -50,7 +50,7 @@ templ AdminMainProperties() {
 	<div role="tablist" class="tabs tabs-bordered  mx-28 ">
 		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="All"/>
 		<div role="tabpanel" class="tab-content p-10">
-			<div hx-get={ "/listings" } hx-trigger="revealed" class=""></div>
+			<div hx-get={ "/listings" } hx-trigger="revealed"></div>
 		</div>
 		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="On-market" checked/>
 		<div role="tabpanel" class="tab-content p-10"></div>
@@ -103,7 +103,14 @@ templ NewPropertyForm() {
 	<form action="/admin/create-property/" method="post" enctype="multipart/form-data">
 		<div id="formContainer">
 			@InputField("Listing name","title",true)
-			@InputField("Property type","type",true)
+			<select class="select select-bordered join-item" name="type">
+				<option selected>Property Type</option>
+				if countries,ok := ctx.Value(propertyKey).(([]db.Option)); ok {
+					for _, option := range(countries) {
+						<option value={ fmt.Sprint(option.Id) }>{ option.Name }</option>
+					}
+				}
+			</select>
 			@InputField("Address","address",true)
 			<select class="select select-bordered join-item" name="country" hx-get="/parishes" hx-target="#parishes">
 				<option selected>Country</option>

@@ -15,7 +15,7 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	property, err := types.ParsePropertyBody(r)
 
 	if err != nil {
-
+		s.logger.Error(err, " error on line 18 property_handler.go")
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -23,7 +23,10 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 	files := r.MultipartForm.File["images"]
 
 	id, err := s.db.CreateProperty(property)
-	err = s.db.UploadPropertyPhotos(files, id)
+
+	if len(files) > 0 {
+		err = s.db.UploadPropertyPhotos(files, id)
+	}
 
 	if err != nil {
 
@@ -31,7 +34,6 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/admin/listings", http.StatusSeeOther)
 }
 
 func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
@@ -69,7 +71,6 @@ func (s *Server) SearchProperties(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
-	// isAdminRoute, _ := regexp.MatchString("admin/+", fmt.Sprint(r.URL))
 
 	propertyFilter, page := types.ParseListingParams(r)
 
@@ -96,17 +97,9 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 	var propertyKey types.ContextKey = "property_types"
 
 	var ctx context.Context
-	countries, err := s.db.GetAllCountries()
-	if err != nil {
-		s.logger.Error(err, " line 32 middleware.go")
-	}
-	property_types, err := s.db.GetAllPropertyTypes()
-	if err != nil {
-		s.logger.Error(err, " line 36 middleware.go")
-	}
 
-	ctx = context.WithValue(context.Background(), countryKey, countries)
-	ctx = context.WithValue(ctx, propertyKey, property_types)
+	ctx = context.WithValue(context.Background(), countryKey, s.InfoStore.Countries)
+	ctx = context.WithValue(ctx, propertyKey, s.InfoStore.Property_types)
 
 	properties, err := s.db.GetProperties(propertyFilter, page, 10)
 

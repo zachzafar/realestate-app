@@ -13,13 +13,15 @@ type Server struct {
 	listenAddress string
 	db            *db.Database
 	logger        *logrus.Logger
+	InfoStore     db.InfoStore
 }
 
-func NewServer(addr string, db *db.Database, logger *logrus.Logger) *Server {
+func NewServer(addr string, db *db.Database, logger *logrus.Logger, InfoStore db.InfoStore) *Server {
 	return &Server{
 		listenAddress: addr,
 		db:            db,
 		logger:        logger,
+		InfoStore:     InfoStore,
 	}
 }
 

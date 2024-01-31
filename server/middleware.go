@@ -9,6 +9,7 @@ import (
 
 func (s *Server) AuthorizeUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		_, ok := r.Context().Value("user-id").(*types.SessionData)
 		if !ok {
 			http.Error(w, "Unauthorized", http.StatusForbidden)
@@ -23,7 +24,6 @@ func (s *Server) SerialiseUser(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sessionCookie, err := r.Cookie("session-id")
 		if err != nil {
-			s.logger.Error(err.Error(), "")
 			next.ServeHTTP(w, r)
 			return
 		}

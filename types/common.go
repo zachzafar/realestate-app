@@ -17,15 +17,18 @@ func NewRange(upper int, lower int) *Range {
 	return &Range{Upper: upper, Lower: lower}
 }
 
-type Relation struct{}
+type Relation interface {
+	GetRelationName() string
+}
 
-func (r Relation) GeneratInsertQuery() (string, []interface{}) {
+func GeneratInsertQuery(r Relation) (string, []interface{}) {
 	var variables []interface{}
 	var columns []string
 	var placeholders []string
 	StructVal := reflect.ValueOf(r)
 	StructType := StructVal.Type()
 	counter := 0
+
 	for i := 0; i < StructVal.NumField(); i++ {
 		counter += 1
 		field := StructVal.Field(i)
@@ -37,12 +40,13 @@ func (r Relation) GeneratInsertQuery() (string, []interface{}) {
 
 	columnString := "(" + strings.Join(columns, ",") + ")"
 	placeholderString := "(" + strings.Join(placeholders, ",") + ")"
-	query := columnString + " VALUES " + placeholderString
+	insertStatement := fmt.Sprintf("INSERT INTO %s ", r.GetRelationName())
+	query := insertStatement + columnString + " VALUES " + placeholderString
 
 	return query, variables
 }
 
-func (r Relation) GenerateQueryString() (string, []interface{}) {
+func GenerateQueryString(r Relation) (string, []interface{}) {
 	var pointers []interface{}
 	var columns []string
 	StructVal := reflect.ValueOf(r)
@@ -62,9 +66,11 @@ func (r Relation) GenerateQueryString() (string, []interface{}) {
 	return query, pointers
 }
 
-type Filter struct{}
+type Filter interface {
+	GetRelationForFilterName() string
+}
 
-func (f Filter) GenerateQueryString() (string, []interface{}) {
+func GenerateFilterQueryString(f Filter) (string, []interface{}) {
 	var variables []interface{}
 	queryString := ""
 	filterVal := reflect.ValueOf(f)
@@ -103,7 +109,7 @@ func (f Filter) GenerateQueryString() (string, []interface{}) {
 				}
 
 			}
-		} else {
+		} else if field.Type().Kind() == reflect.Int {
 			if field.Interface().(int) != 0 {
 
 				counter = counter + 1

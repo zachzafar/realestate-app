@@ -92,11 +92,23 @@ func (s *Server) Logout(w http.ResponseWriter, r *http.Request) {
 	sessionCookie, err := r.Cookie("session-id")
 	sessionID := sessionCookie.Value
 
-	s.logger.Info(err, "  user doesn't have session cookie")
+	if err != nil {
+		s.logger.Info(err, "  user doesn't have session cookie and is trying to log out")
+	}
 
 	if err := s.db.DeleteSession(sessionID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+
+	expiredCookie := http.Cookie{
+		Name:     "session-id",
+		Value:    "",
+		Path:     "/",
+		HttpOnly: true,
+		Expires:  time.Unix(0, 0),
+		MaxAge:   -1,
+	}
+	http.SetCookie(w, &expiredCookie)
 
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
 }

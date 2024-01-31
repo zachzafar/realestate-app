@@ -11,26 +11,21 @@ import (
 	"openlettings.com/utils"
 )
 
-func (d *Database) CreateProperty(property *types.Property) (int64, error) {
-	query, values := property.GeneratInsertQuery()
-	query = `INSERT INTO properties ` + query
-	result, err := d.db.Exec(query, values...)
+func (d *Database) CreateProperty(property *types.Property) (int, error) {
+	query, values := types.GeneratInsertQuery(*property)
+	query = query + " RETURNING property_id"
+	var id int
+	err := d.db.QueryRow(query, values...).Scan(&id)
 	if err != nil {
 		return 0, err
 	}
 
-	id, err := result.LastInsertId()
 	return id, err
 }
 
-// func (d *Database) UpdateProperty(property *types.Property) (err error) {
-// 	query := ``
-
-// }
-
-func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int64) error {
+func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int) error {
 	query := `INSERT INTO media (property_id,url) VALUES ($1,$2)`
-	id_string := strconv.FormatInt(id, 10)
+	id_string := strconv.FormatInt(int64(id), 10)
 
 	if err := os.MkdirAll("./media/properties/"+id_string, 0777); err != nil {
 		return utils.CustomError{Message: "failed to create directory"}
@@ -90,7 +85,7 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 		FROM properties p
 		LEFT JOIN media m ON p.property_id = m.property_id
 		`
-	filterString, parameters := filter.GenerateQueryString()
+	filterString, parameters := types.GenerateFilterQueryString(*filter)
 	paramLength := len(parameters)
 	parameters = append(parameters, pageSize, (pageSize * (page - 1)))
 
@@ -127,7 +122,7 @@ func (d *Database) GetProperties(filter *types.PropertyFilter, page int, pageSiz
 
 func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, error) {
 
-	filterString, params := queryFilter.GenerateQueryString()
+	filterString, params := types.GenerateFilterQueryString(*queryFilter)
 	query := `SELECT COUNT(*) AS row_count FROM properties`
 	if filterString != "" {
 		query = query + " WHERE " + filterString
@@ -152,7 +147,7 @@ func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, err
 func (d *Database) GetPropertyDetails(propertyId int) (*types.Property, error) {
 	var property *types.Property
 
-	query, pointers := property.GenerateQueryString()
+	query, pointers := types.GenerateQueryString(property)
 
 	query = "SELECT " + query + " FROM properties WHERE property_id=$1"
 	err := d.db.QueryRow(query, propertyId).Scan(pointers...)

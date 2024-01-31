@@ -7,7 +7,6 @@ import (
 )
 
 type PropertyFilter struct {
-	Filter
 	PriceRange    Range `db:"price"`
 	Property_type int   `db:"property_type_id"`
 	Country       int   `db:"country_id"`
@@ -15,6 +14,10 @@ type PropertyFilter struct {
 	Beds          int   `db:"bedrooms"`
 	Bathrooms     int   `db:"bathrooms"`
 	UserId        int   `db:"user_id"`
+}
+
+func (f PropertyFilter) GetRelationForFilterName() string {
+	return "properties"
 }
 
 func NewPropertyFilter(property_type int, country int, parish int, priceRange Range, beds int, bathrooms int, userId int) *PropertyFilter {
@@ -31,12 +34,14 @@ func NewPropertyFilter(property_type int, country int, parish int, priceRange Ra
 }
 
 type PropertySummary struct {
-	PropertyId  int     `json:"property_id"`
-	Title       string  `json:"title"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	Address     string  `json:"address"`
-	Url         string  `json:"url"`
+	PropertyId  int
+	Title       string
+	Description string
+	Price       float64
+	Country     string
+	Parish      string
+	Address     string
+	Url         string
 }
 
 func NewPropertySummary(propertyId int, title string, desc string, price float64, address string, url string) *PropertySummary {
@@ -51,8 +56,6 @@ func NewPropertySummary(propertyId int, title string, desc string, price float64
 }
 
 type Property struct {
-	Relation
-	PropertyID     int     `db:"property_id"`
 	Title          string  `db:"title"`
 	Description    string  `db:"description"`
 	PropertyTypeID int     `db:"property_type_id"`
@@ -73,6 +76,10 @@ type Property struct {
 	ContactPhone   string  `db:"contact_phone"`
 	Availability   bool    `db:"availability"`
 	UserID         int     `db:"user_id"`
+}
+
+func (p Property) GetRelationName() string {
+	return "properties"
 }
 
 func ParseListingParams(r *http.Request) (*PropertyFilter, int) {
@@ -112,7 +119,7 @@ func ParsePropertyBody(r *http.Request) (*Property, error) {
 		return nil, err
 	}
 
-	userId, ok := r.Context().Value("user-id").(int)
+	sessionData, ok := r.Context().Value("user-id").(*SessionData)
 	if !ok {
 		return nil, fmt.Errorf("No user")
 	}
@@ -142,7 +149,7 @@ func ParsePropertyBody(r *http.Request) (*Property, error) {
 		Bathrooms:      bathrooms,
 		Size:           size,
 		Bedrooms:       bedrooms,
-		UserID:         userId,
+		UserID:         sessionData.UserId,
 		Price:          price,
 
 		Neighborhood: r.PostFormValue("neighborhood"),

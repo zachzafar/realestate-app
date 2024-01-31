@@ -46,9 +46,15 @@ func main() {
 		logger.Fatal(err)
 	}
 
+	InfoStore, err := db.InitStore()
+
+	if err != nil {
+		logger.Fatal(err)
+	}
+
 	listenAddress := flag.String("listenaddr", ":3000", "the server address")
 	flag.Parse()
-	server := server.NewServer(*listenAddress, db, logger)
+	server := server.NewServer(*listenAddress, db, logger, *InfoStore)
 	logger.Fatal(server.Start())
 
 }
