@@ -145,11 +145,10 @@ func (d *Database) GetPropertyCount(queryFilter *types.PropertyFilter) (int, err
 }
 
 func (d *Database) GetPropertyDetails(propertyId int) (*types.Property, error) {
-	var property *types.Property
+	property := &types.Property{}
 
-	query, pointers := types.GenerateQueryString(property)
+	query, pointers := types.GenerateQueryByIDString(property)
 
-	query = "SELECT " + query + " FROM properties WHERE property_id=$1"
 	err := d.db.QueryRow(query, propertyId).Scan(pointers...)
 
 	if err != nil {

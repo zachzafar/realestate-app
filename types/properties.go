@@ -82,6 +82,10 @@ func (p Property) GetRelationName() string {
 	return "properties"
 }
 
+func (p Property) GetPrimaryKeyName() string {
+	return "property_id"
+}
+
 func ParseListingParams(r *http.Request) (*PropertyFilter, int) {
 	userId := 0
 	if userData, ok := r.Context().Value("user-id").(*SessionData); ok {

@@ -19,13 +19,14 @@ func NewRange(upper int, lower int) *Range {
 
 type Relation interface {
 	GetRelationName() string
+	GetPrimaryKeyName() string
 }
 
 func GeneratInsertQuery(r Relation) (string, []interface{}) {
 	var variables []interface{}
 	var columns []string
 	var placeholders []string
-	StructVal := reflect.ValueOf(r)
+	StructVal := reflect.Indirect(reflect.ValueOf(r))
 	StructType := StructVal.Type()
 	counter := 0
 
@@ -46,10 +47,10 @@ func GeneratInsertQuery(r Relation) (string, []interface{}) {
 	return query, variables
 }
 
-func GenerateQueryString(r Relation) (string, []interface{}) {
+func GenerateQueryByIDString(r Relation) (string, []interface{}) {
 	var pointers []interface{}
 	var columns []string
-	StructVal := reflect.ValueOf(r)
+	StructVal := reflect.Indirect(reflect.ValueOf(r))
 	StructType := StructVal.Type()
 
 	for i := 0; i < StructVal.NumField(); i++ {
@@ -62,6 +63,7 @@ func GenerateQueryString(r Relation) (string, []interface{}) {
 	}
 
 	query := strings.Join(columns, ",")
+	query = "SELECT " + query + " FROM " + r.GetRelationName() + " WHERE " + r.GetPrimaryKeyName() + "=$1"
 
 	return query, pointers
 }

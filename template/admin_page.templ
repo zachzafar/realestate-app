@@ -123,6 +123,8 @@ templ NewPropertyForm() {
 			<select class="select select-bordered join-item" name="parish" id="parishes">
 				<option value="0" selected>Parish</option>
 			</select>
+			<label for="ImageInput">Upload Image</label>
+			<input type="file" id="ImageInput" name="images" accept="image/jpeg image/png" class="file-input file-input-bordered file-input-info w-full max-w-xs"/>
 		</div>
 		<button type="submit" class="btn btn-info">Create property</button>
 	</form>
