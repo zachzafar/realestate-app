@@ -17,12 +17,13 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	ar := r.PathPrefix("/admin").Subrouter()
 	ar.Use(s.AuthorizeUser)
 	// views
+	ar.HandleFunc("/listings/{id}", s.GetAdminListingDetails)
 	ar.HandleFunc("/", s.GetAdminPropertiesPage)
 
 	//actions
 	ar.HandleFunc("/create-property/", s.CreateProperty).Methods("POST")
-	ar.HandleFunc("/delete-property/", s.DeleteProperty).Methods("DELETE")
-	ar.HandleFunc("/update-property/", s.UpdateProperty).Methods("UPDATE")
+	ar.HandleFunc("/delete-property/{id}", s.DeleteProperty).Methods("DELETE")
+	ar.HandleFunc("/update-property/{id}", s.UpdateProperty).Methods("PUT")
 	ar.HandleFunc("/logout", s.Logout)
 
 	// views

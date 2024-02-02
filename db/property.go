@@ -23,6 +23,28 @@ func (d *Database) CreateProperty(property *types.Property) (int, error) {
 	return id, err
 }
 
+func (d *Database) UpdateProperty(property *types.Property, propertyId int) error {
+	query, values := types.GenerateUpdateQuery(property)
+	values = append(values, propertyId)
+	_, err := d.db.Exec(query, values...)
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Database) DeleteProperty(propertyId int) error {
+	query := `DELETE FROM properties WHERE property_id=$1`
+	_, err := d.db.Exec(query, propertyId)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (d *Database) UploadPropertyPhotos(files []*multipart.FileHeader, id int) error {
 	query := `INSERT INTO media (property_id,url) VALUES ($1,$2)`
 	id_string := strconv.FormatInt(int64(id), 10)

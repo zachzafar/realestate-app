@@ -1,8 +1,8 @@
 package template
 
-templ InputField(title string,name string, required bool) {
+templ InputField(title string,name string, required bool,value string) {
 	<div class="mb-3">
 		<label for="name" class="form-label">{ title }</label>
-		<input type="text" id="name" name={ name } class="form-control input input-bordered input-info" required?={ required }/>
+		<input value={ value } type="text" id="name" name={ name } class="form-control input input-bordered input-info" required?={ required }/>
 	</div>
 }

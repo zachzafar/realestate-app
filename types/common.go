@@ -47,6 +47,28 @@ func GeneratInsertQuery(r Relation) (string, []interface{}) {
 	return query, variables
 }
 
+func GenerateUpdateQuery(r Relation) (string, []interface{}) {
+	var variables []interface{}
+	var updates []string
+	StructVal := reflect.Indirect(reflect.ValueOf(r))
+	StructType := StructVal.Type()
+	counter := 0
+
+	for i := 0; i < StructVal.NumField(); i++ {
+		counter += 1
+		field := StructVal.Field(i)
+		fieldType := StructType.Field(i)
+		column := fieldType.Tag.Get("db")
+		placeholder := fmt.Sprintf("$%d", counter)
+		update := column + " = " + placeholder
+		updates = append(updates, update)
+		variables = append(variables, field.Interface())
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET %s WHERE %s=$%d", r.GetRelationName(), strings.Join(updates, ", "), r.GetPrimaryKeyName(), counter+1)
+	return query, variables
+}
+
 func GenerateQueryByIDString(r Relation) (string, []interface{}) {
 	var pointers []interface{}
 	var columns []string
@@ -129,7 +151,3 @@ func GenerateFilterQueryString(f Filter) (string, []interface{}) {
 
 	return queryString, variables
 }
-
-// func (r Relation) GenerateSelectionQuery() (string, []interface{}) {
-
-// }

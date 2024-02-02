@@ -31,11 +31,14 @@ func (s *Server) GetListingsPage(w http.ResponseWriter, r *http.Request) {
 func (s *Server) GetAdminPropertiesPage(w http.ResponseWriter, r *http.Request) {
 	var countryKey types.ContextKey = "countries"
 	var propertyKey types.ContextKey = "property_types"
+	var userIDKey types.ContextKey = "user-id"
 
 	var ctx context.Context
+	sessionData, _ := r.Context().Value("user-id").(*types.SessionData)
 
 	ctx = context.WithValue(context.Background(), countryKey, s.InfoStore.Countries)
 	ctx = context.WithValue(ctx, propertyKey, s.InfoStore.Property_types)
+	ctx = context.WithValue(ctx, userIDKey, sessionData.UserId)
 
 	Properties := template.AdminMainProperties()
 	template.NewAdminLayout(Properties).Render(ctx, w)

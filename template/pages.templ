@@ -9,6 +9,7 @@ import (
 
 var countryKey types.ContextKey = "countries"
 var propertyKey types.ContextKey = "property_types"
+var userIDKey types.ContextKey = "user-id"
 
 templ Options(options []db.Option) {
 	for _, option :=range(options) {

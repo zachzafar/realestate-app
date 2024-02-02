@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -40,14 +39,19 @@ func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	property, err := types.ParsePropertyBody(r)
 
 	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	files := r.MultipartForm.File["images"]
 
-	id, err := s.db.CreateProperty(property)
+	err = s.db.UpdateProperty(property, id)
 	err = s.db.UploadPropertyPhotos(files, id)
 
 	if err != nil {
@@ -60,7 +64,14 @@ func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) DeleteProperty(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
 
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = s.db.DeleteProperty(id)
 }
 
 func (s *Server) SearchProperties(w http.ResponseWriter, r *http.Request) {
@@ -93,14 +104,6 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	var countryKey types.ContextKey = "countries"
-	var propertyKey types.ContextKey = "property_types"
-
-	var ctx context.Context
-
-	ctx = context.WithValue(context.Background(), countryKey, s.InfoStore.Countries)
-	ctx = context.WithValue(ctx, propertyKey, s.InfoStore.Property_types)
-
 	properties, err := s.db.GetProperties(propertyFilter, page, 10)
 
 	if err != nil {
@@ -108,7 +111,11 @@ func (s *Server) GetListings(w http.ResponseWriter, r *http.Request) {
 
 	}
 
-	template.Listings(properties, hasNextPage, nextPage).Render(ctx, w)
+	if r.URL.Query().Get("format") == "admin" {
+		template.AdminListings(properties, hasNextPage, nextPage).Render(r.Context(), w)
+	} else {
+		template.Listings(properties, hasNextPage, nextPage).Render(r.Context(), w)
+	}
 
 }
 
@@ -125,6 +132,23 @@ func (s *Server) GetListingDetails(w http.ResponseWriter, r *http.Request) {
 
 	ListingDetails := template.ListingDetails(*property)
 	template.MainLayout(ListingDetails).Render(r.Context(), w)
+	return
+
+}
+
+func (s *Server) GetAdminListingDetails(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	property, err := s.db.GetPropertyDetails(id)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	ListingDetails := template.EditPropertyDetails(*property, id)
+	template.NewAdminLayout(ListingDetails).Render(r.Context(), w)
 	return
 
 }

@@ -19,6 +19,7 @@ import (
 
 var countryKey types.ContextKey = "countries"
 var propertyKey types.ContextKey = "property_types"
+var userIDKey types.ContextKey = "user-id"
 
 func Options(options []db.Option) templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {

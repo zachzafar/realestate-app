@@ -88,8 +88,9 @@ func (p Property) GetPrimaryKeyName() string {
 
 func ParseListingParams(r *http.Request) (*PropertyFilter, int) {
 	userId := 0
-	if userData, ok := r.Context().Value("user-id").(*SessionData); ok {
-		userId = userData.UserId
+
+	if id, err := strconv.Atoi(r.URL.Query().Get("user-id")); err == nil {
+		userId = id
 	}
 
 	page, _ := strconv.Atoi(r.URL.Query().Get("page"))

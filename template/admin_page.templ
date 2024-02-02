@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"openlettings.com/db"
+	"openlettings.com/types"
+	"openlettings.com/utils"
 )
 
 templ NewAdminLayout(Page templ.Component) {
@@ -49,8 +51,8 @@ templ AdminMainProperties() {
 	</div>
 	<div role="tablist" class="tabs tabs-bordered  mx-28 ">
 		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="All"/>
-		<div role="tabpanel" class="tab-content p-10">
-			<div hx-get={ "/listings" } hx-trigger="revealed"></div>
+		<div role="tabpanel" class="tab-content p-10 ">
+			<div class="grid-cols-3 grid" hx-get={ fmt.Sprintf("/listings?format=admin&user-id=%d", ctx.Value(userIDKey)) } hx-trigger="revealed"></div>
 		</div>
 		<input type="radio" name="my_tabs_1" role="tab" class="tab" aria-label="On-market" checked/>
 		<div role="tabpanel" class="tab-content p-10"></div>
@@ -68,30 +70,28 @@ templ AdminMainProperties() {
 	</dialog>
 }
 
-templ PropertyForm() {
-	<form id="multiStepForm" action="/admin/create-property/" method="post" enctype="multipart/form-data">
+templ PropertyForm(property types.Property,propertyId int) {
+	<form id="multiStepForm" action={ templ.URL(fmt.Sprintf("/admin/update-property/%d", propertyId)) } method="PUT" enctype="multipart/form-data">
 		<div id="formContainer">
 			<!-- Step 1 -->
 			<div class="step">
 				<h2 class="mb-4">Step 1</h2>
-				@InputField("Listing name","title",true)
-				@InputField("Property type","type",true)
-				@InputField("Description","description",true)
-				@InputField("Price","price",true)
+				@InputField("Listing name","title",true,property.Title)
+				@InputField("Description","description",true,property.Description)
+				@InputField("Price","price",true,fmt.Sprint(property.Price))
 			</div>
 			<!-- Step 2 -->
 			<div class="step">
 				<h2 class="mb-4">Step 2</h2>
-				@InputField("Address","address",true)
-				@InputField("City","city",true)
+				@InputField("Address","address",true,property.Address)
 			</div>
 			<!-- Step 3 -->
 			<div class="step">
 				<h2 class="mb-4">Step 3</h2>
-				@InputField("Size","size",true)
-				@InputField("Number of Bedrooms","bedrooms",true)
-				@InputField("Number of Bathrooms","bathrooms",true)
-				@InputField("Year Built","year",true)
+				@InputField("Size","size",true,fmt.Sprint(property.Size))
+				@InputField("Number of Bedrooms","bedrooms",true, fmt.Sprint(property.Bedrooms))
+				@InputField("Number of Bathrooms","bathrooms",true,fmt.Sprint(property.Bedrooms))
+				@InputField("Year Built","year",true,fmt.Sprint(property.YearBuilt))
 				<input type="file" name="images" accept=".jpeg" multiple required/>
 				<button type="submit" class="btn btn-success">Submit</button>
 			</div>
@@ -102,7 +102,7 @@ templ PropertyForm() {
 templ NewPropertyForm() {
 	<form action="/admin/create-property/" method="post" enctype="multipart/form-data">
 		<div id="formContainer">
-			@InputField("Listing name","title",true)
+			@InputField("Listing name","title",true,"")
 			<select class="select select-bordered join-item" name="type">
 				<option selected>Property Type</option>
 				if countries,ok := ctx.Value(propertyKey).(([]db.Option)); ok {
@@ -111,7 +111,7 @@ templ NewPropertyForm() {
 					}
 				}
 			</select>
-			@InputField("Address","address",true)
+			@InputField("Address","address",true,"")
 			<select class="select select-bordered join-item" name="country" hx-get="/parishes" hx-target="#parishes">
 				<option selected>Country</option>
 				if countries,ok := ctx.Value(countryKey).(([]db.Option)); ok {
@@ -128,4 +128,43 @@ templ NewPropertyForm() {
 		</div>
 		<button type="submit" class="btn btn-info">Create property</button>
 	</form>
+}
+
+templ AdminListings(properties []types.PropertySummary,hasNext bool,nextPage string) {
+	for i, property := range properties {
+		<a
+ 			if utils.IsLast(i,properties) && hasNext {
+				hx-get={ nextPage }
+				hx-trigger="revealed"
+				hx-swap="afterend"
+			}
+ 			href={ templ.URL(fmt.Sprintf("/admin/listings/%d", property.PropertyId)) }
+		>
+			<div class="card w-96 bg-base-100 shadow-xl">
+				<figure><img src={ fmt.Sprintf("/images/%s", property.Url) } alt="Shoes"/></figure>
+				<div class="card-body">
+					<h2 class="card-title">
+						{ property.Title }
+						<div class="badge badge-secondary">Off Market</div>
+					</h2>
+					<p>If a dog chews shoes whose shoes does he choose?</p>
+					<div class="card-actions justify-end">
+						<div class="badge badge-outline">Messages</div>
+						<div class="badge badge-outline">Property Details</div>
+					</div>
+				</div>
+			</div>
+		</a>
+	}
+}
+
+templ EditPropertyDetails(property types.Property,propertyId int) {
+	<div>
+		<a href="/admin/"><h1>Properties</h1></a>
+		@PropertyForm(property,propertyId)
+	</div>
+}
+
+templ SuccessMessage() {
+	<h1>Successfully Added new Property</h1>
 }
