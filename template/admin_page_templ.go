@@ -244,7 +244,7 @@ func PropertyForm(property types.Property, propertyId int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"PUT\" enctype=\"multipart/form-data\"><div id=\"formContainer\"><!--")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" method=\"POST\" enctype=\"multipart/form-data\"><div id=\"formContainer\"><!--")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -278,6 +278,10 @@ func PropertyForm(property types.Property, propertyId int) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
+		templ_7745c5c3_Err = PropertyTypeSelect(property.PropertyTypeID).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><!--")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -301,6 +305,10 @@ func PropertyForm(property types.Property, propertyId int) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		templ_7745c5c3_Err = InputField("Address", "address", true, property.Address).Render(ctx, templ_7745c5c3_Buffer)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Err = CountrySelect(property.CountryID).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -554,7 +562,7 @@ func AdminListings(properties []types.PropertySummary, hasNext bool, nextPage st
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"Shoes\"></figure><div class=\"card-body\"><h2 class=\"card-title\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"Shoes\"> <svg class=\"w-6 h-6 text-gray-800 dark:text-white drop-down\" aria-hidden=\"true\" xmlns=\"http://www.w3.org/2000/svg\" fill=\"none\" viewBox=\"0 0 24 24\"><path stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M6 18 18 6m0 12L6 6\"></path></svg></figure><div class=\"card-body\"><h2 class=\"card-title\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

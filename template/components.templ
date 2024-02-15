@@ -1,8 +1,41 @@
 package template
 
+import (
+	"fmt"
+	"openlettings.com/db"
+)
+
 templ InputField(title string,name string, required bool,value string) {
 	<div class="mb-3">
 		<label for="name" class="form-label">{ title }</label>
 		<input value={ value } type="text" id="name" name={ name } class="form-control input input-bordered input-info" required?={ required }/>
 	</div>
+}
+
+templ CountrySelect(current int) {
+	<select class="select select-bordered join-item" name="country" hx-get="/parishes" hx-target="#parishes">
+		<option selected?={ current == 0 }>Country</option>
+		if countries,ok := ctx.Value(countryKey).(([]db.Option)); ok {
+			for _, option := range(countries) {
+				<option value={ fmt.Sprint(option.Id) } selected?={ current == option.Id }>{ option.Name }</option>
+			}
+		}
+	</select>
+}
+
+templ ParishSelect(countryID,parishID int) {
+	<select class="select select-bordered join-item" name="parish" id="parishes">
+		<option value="0" selected>Parish</option>
+	</select>
+}
+
+templ PropertyTypeSelect(current int) {
+	<select class="select select-bordered join-item" name="property_type">
+		<option value="0" selected?={ current == 0 }>Property type</option>
+		if property_types, ok := ctx.Value(propertyKey).([]db.Option); ok {
+			for _, option := range(property_types) {
+				<option value={ fmt.Sprint(option.Id) } selected?={ current == option.Id }>{ option.Name }</option>
+			}
+		}
+	</select>
 }

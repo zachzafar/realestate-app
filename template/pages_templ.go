@@ -77,7 +77,7 @@ func ListingsFilter(filter types.PropertyFilter) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><form action=\"/listings\" method=\"GET\"><div class=\"join\"><select class=\"select select-bordered join-item\" name=\"country\" hx-get=\"/parishes\" hx-target=\"#parishes\"><option selected>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div><form action=\"/listings\" method=\"GET\" hx-target=\"#listings\"><div class=\"join\"><select class=\"select select-bordered join-item\" name=\"country\" hx-get=\"/parishes\" hx-target=\"#parishes\"><option selected>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

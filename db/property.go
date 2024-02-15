@@ -20,14 +20,15 @@ func (d *Database) CreateProperty(property *types.Property) (int, error) {
 		return 0, err
 	}
 
-	return id, err
+	return id, nil
 }
 
 func (d *Database) UpdateProperty(property *types.Property, propertyId int) error {
 	query, values := types.GenerateUpdateQuery(property)
 	values = append(values, propertyId)
 	_, err := d.db.Exec(query, values...)
-
+	fmt.Println(query)
+	fmt.Println(values...)
 	if err != nil {
 		return err
 	}

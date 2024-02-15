@@ -101,6 +101,22 @@ CREATE TABLE IF NOT EXISTS sessions (
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TYPE message_type AS ENUM ('application', 'inquiry', 'tour');
+
+
+CREATE TABLE IF NOT EXISTS messages (
+  message_id SERIAL PRIMARY KEY,
+  message VARCHAR(255),
+  name VARCHAR(64) NOT NULL,
+  phone VARCHAR(20),
+  email VARCHAR(64),
+  message_type message_type,
+  tour_time TIME NULL,
+  tour_date DATE NULL,
+  user_id INT REFERENCES users(user_id) ON DELETE CASCADE,
+  property_id INT REFERENCES properties(property_id) ON DELETE CASCADE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 
 
 INSERT INTO countries (name) VALUES ('Barbados'),('St.Lucia'),('Grenada');

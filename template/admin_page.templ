@@ -71,7 +71,7 @@ templ AdminMainProperties() {
 }
 
 templ PropertyForm(property types.Property,propertyId int) {
-	<form id="multiStepForm" action={ templ.URL(fmt.Sprintf("/admin/update-property/%d", propertyId)) } method="PUT" enctype="multipart/form-data">
+	<form id="multiStepForm" action={ templ.URL(fmt.Sprintf("/admin/update-property/%d", propertyId)) } method="POST" enctype="multipart/form-data">
 		<div id="formContainer">
 			<!-- Step 1 -->
 			<div class="step">
@@ -79,11 +79,13 @@ templ PropertyForm(property types.Property,propertyId int) {
 				@InputField("Listing name","title",true,property.Title)
 				@InputField("Description","description",true,property.Description)
 				@InputField("Price","price",true,fmt.Sprint(property.Price))
+				@PropertyTypeSelect(property.PropertyTypeID)
 			</div>
 			<!-- Step 2 -->
 			<div class="step">
 				<h2 class="mb-4">Step 2</h2>
 				@InputField("Address","address",true,property.Address)
+				@CountrySelect(property.CountryID)
 			</div>
 			<!-- Step 3 -->
 			<div class="step">
@@ -141,7 +143,12 @@ templ AdminListings(properties []types.PropertySummary,hasNext bool,nextPage str
  			href={ templ.URL(fmt.Sprintf("/admin/listings/%d", property.PropertyId)) }
 		>
 			<div class="card w-96 bg-base-100 shadow-xl">
-				<figure><img src={ fmt.Sprintf("/images/%s", property.Url) } alt="Shoes"/></figure>
+				<figure>
+					<img src={ fmt.Sprintf("/images/%s", property.Url) } alt="Shoes"/>
+					<svg class="w-6 h-6 text-gray-800 dark:text-white drop-down" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+						<path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6m0 12L6 6"></path>
+					</svg>
+				</figure>
 				<div class="card-body">
 					<h2 class="card-title">
 						{ property.Title }

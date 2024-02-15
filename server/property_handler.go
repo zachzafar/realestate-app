@@ -32,7 +32,7 @@ func (s *Server) CreateProperty(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	http.Redirect(w, r, "/admin/", http.StatusSeeOther)
 }
 
 func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
@@ -52,7 +52,16 @@ func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 	files := r.MultipartForm.File["images"]
 
 	err = s.db.UpdateProperty(property, id)
-	err = s.db.UploadPropertyPhotos(files, id)
+
+	if err != nil {
+		fmt.Println(err.Error())
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if len(files) > 0 {
+		err = s.db.UploadPropertyPhotos(files, id)
+	}
 
 	if err != nil {
 
@@ -60,7 +69,7 @@ func (s *Server) UpdateProperty(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/admin/listings", http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/admin/listings/%d", id), http.StatusSeeOther)
 }
 
 func (s *Server) DeleteProperty(w http.ResponseWriter, r *http.Request) {

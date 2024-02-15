@@ -19,7 +19,7 @@ templ Options(options []db.Option) {
 
 templ ListingsFilter(filter types.PropertyFilter) {
 	<div>
-		<form action="/listings" method="GET">
+		<form action="/listings" method="GET" hx-target="#listings">
 			<div class="join">
 				<select class="select select-bordered join-item" name="country" hx-get="/parishes" hx-target="#parishes">
 					<option selected>Country</option>
@@ -126,6 +126,26 @@ templ ListingDetails(property types.Property) {
 		<h3>{ property.Address }</h3>
 		<h5>{ fmt.Sprintf("%f",property.Price) }</h5>
 		<p>{ property.Description }</p>
+		<button onclick="my_modal_1.showModal()" class="btn btn-primary flex-none">Ask a quuestion</button>
+		<button onclick="my_modal_2.showModal()" class="btn btn-primary flex-none">Request a tour</button>
+		<dialog id="my_modal_1" class="modal">
+			<div class="modal-box">
+				<h1>New Property</h1>
+				@NewPropertyForm()
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>close</button>
+			</form>
+		</dialog>
+		<dialog id="my_modal_2" class="modal">
+			<div class="modal-box">
+				<h1>New Property</h1>
+				@NewPropertyForm()
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>close</button>
+			</form>
+		</dialog>
 	</main>
 }
 
@@ -174,4 +194,13 @@ templ SearchForm() {
 			</div>
 		</form>
 	</div>
+}
+
+templ AskAQuestionForm() {
+	<form>
+		@InputField("Message","name",true,"")
+		@InputField("Name","name",true,"")
+		@InputField("Phone","phone",false,"")
+		@InputField("Email","email",true,"")
+	</form>
 }

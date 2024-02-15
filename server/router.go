@@ -23,7 +23,7 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	//actions
 	ar.HandleFunc("/create-property/", s.CreateProperty).Methods("POST")
 	ar.HandleFunc("/delete-property/{id}", s.DeleteProperty).Methods("DELETE")
-	ar.HandleFunc("/update-property/{id}", s.UpdateProperty).Methods("PUT")
+	ar.HandleFunc("/update-property/{id}", s.UpdateProperty).Methods("POST")
 	ar.HandleFunc("/logout", s.Logout)
 
 	// views
@@ -39,7 +39,7 @@ func (s *Server) HandleRoutes(r *mux.Router) {
 	// actions
 	r.HandleFunc("/create-user/", s.CreateUser).Methods("POST")
 	r.HandleFunc("/auth-user/", s.LoginUser).Methods("POST")
-
+	r.HandleFunc("/create-message/", s.CreateMessage).Methods("POST")
 	r.HandleFunc("/parishes", s.GetParishes).Methods("GET")
 
 }
