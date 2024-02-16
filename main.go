@@ -18,9 +18,10 @@ import (
 func main() {
 	err := godotenv.Load()
 
-	if err != nil {
+	if err != nil && os.Getenv("APP_ENV") != "PRODUCTION" {
 		panic(err)
 	}
+
 	var logger = logrus.New()
 	logger.SetLevel(logrus.InfoLevel)
 
