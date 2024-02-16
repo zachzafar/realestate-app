@@ -4,8 +4,6 @@ import (
 	"flag"
 	"os"
 
-	"log"
-
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -26,13 +24,8 @@ func main() {
 	logger.SetLevel(logrus.InfoLevel)
 
 	logger.SetFormatter(&logrus.JSONFormatter{})
-	file, err := os.Create("logfile.log")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
 
-	logger.SetOutput(file)
+	logger.SetOutput(os.Stdout)
 
 	err = runMigrations()
 
