@@ -46,7 +46,7 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	listenAddress := flag.String("listenaddr", os.Getenv("PORT"), "the server address")
+	listenAddress := flag.String("listenaddr", ":"+os.Getenv("PORT"), "the server address")
 	flag.Parse()
 	server := server.NewServer(*listenAddress, db, logger, *InfoStore)
 	logger.Fatal(server.Start())
