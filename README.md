@@ -1,6 +1,9 @@
 # realestate-app
 
 # Get Started
+you will need to have postgres installed locally 
+create a .env file with variables for the db
+
 
 go run main.go
 
